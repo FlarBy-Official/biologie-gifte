@@ -38,6 +38,10 @@ js/
   core/
     storage.js               Generischer LocalStorage-Wrapper (CRUD), Promise-basiert
     utils.js                 Kleine Helfer (IDs, Datum, Escaping, Toast-Anzeige)
+    viewport.js              Mobile-Breakpoint als einzige Quelle der Wahrheit für JS
+    back-stack.js            Overlays (Detail/Modals/Drawer) an die Browser-History koppeln
+    theme.js                 Umschalten zwischen dunklem und hellem Design
+    edit-lock.js             PIN-Sperre für Anlegen/Bearbeiten/Löschen
   domains/
     gift/
       gift.model.js           Datenmodell + Validierung für "Gift"
@@ -112,25 +116,84 @@ zentral angepasst werden kann.
 Die App muss auf dem Handy genauso gut nutzbar sein wie am Desktop.
 Das gilt für Basis-Layout **und** für jede Domain:
 
-- **Basis-Layout** (`css/base/layout.css`): Die Sidebar (`.app-sidebar`)
-  klappt unterhalb eines Breakpoints (`max-width: 768px`) von einer
-  festen linken Spalte zu einer oben angehefteten, horizontal
-  scrollbaren Leiste um; `.app-content` bekommt kleinere Abstände.
+- **Basis-Layout** (`css/base/layout.css`): Unterhalb von 768px wird
+  die Sidebar (`.app-sidebar`) zur **Off-Canvas-Drawer**: sie liegt
+  `position: fixed` links außerhalb des Bildschirms und wird über den
+  ☰-Button (`[data-sidebar-toggle]` in der Topbar) per
+  `.app-shell.is-drawer-open` eingeblendet. Dahinter liegt
+  `.app-sidebar-backdrop`. Die Drawer schließt bei Auswahl eines
+  Nav-/Filter-Eintrags, Tippen auf den Backdrop, `Escape` und über den
+  Zurück-Button (siehe „Back-Navigation"). Die Logik dazu steckt in
+  `SidebarDrawer` in `js/app.js`.
 - **Komponenten** (`css/base/components.css`): `.modal` ist unterhalb
   des Breakpoints vollflächig (kein `max-width`, `border-radius: 0`,
-  `max-height: 100vh`), `.field-row` stapelt seine Felder
-  untereinander statt nebeneinander, `.card-grid` erlaubt einspaltige
-  Darstellung.
+  `max-height: 100dvh`), `.field-row` stapelt seine Felder
+  untereinander statt nebeneinander, `.card-grid` ist einspaltig.
+  Buttons bekommen `min-height: 44px` (Apples Touch-Ziel-Empfehlung).
 - **Neue Domains**: Wer eine neue Domain-CSS-Datei anlegt, muss für
   eigene, domain-spezifische Layouts (z.B. Toolbars, Grids) ebenfalls
   einen `@media (max-width: 768px)`-Block mitliefern, statt sich
   ausschließlich auf Desktop-Breiten zu verlassen.
-- Einheitlicher Breakpoint: **768px** (Tablet-Hochformat/Handy-Grenze),
-  als Variable/Konvention beizubehalten, damit alle Domains konsistent
-  umbrechen.
+- Einheitlicher Breakpoint: **768px**. Der Wert ist zusätzlich in
+  `js/core/viewport.js` als `MOBILE_BREAKPOINT` hinterlegt – JS und
+  CSS müssen beim Ändern zusammen angepasst werden. Für Abfragen im
+  JS immer `isMobileViewport()` / `onViewportChange()` von dort
+  verwenden, statt `window.innerWidth` selbst auszuwerten.
 - Bevorzugt werden flexible Einheiten (`%`, `rem`, `minmax()`,
   `auto-fill`/`auto-fit` in Grids) gegenüber festen Pixel-Breiten,
   damit möglichst wenige zusätzliche Breakpoints nötig sind.
+
+### iOS-Besonderheiten
+
+Diese Punkte sind bereits umgesetzt und sollten bei Änderungen nicht
+versehentlich zurückgedreht werden:
+
+- **Viewport**: `viewport-fit=cover` in `index.html`; sämtliche
+  Ränder, die an den Bildschirmrand stoßen (Topbar, Drawer,
+  `.app-content`, Modal-Header/-Footer, Vollbild-Detail, Toasts)
+  rechnen `env(safe-area-inset-*)` ein, damit nichts unter Notch oder
+  Home-Indicator rutscht.
+- **Höhen**: `100vh` ist in Safari größer als der sichtbare Bereich
+  (Adressleiste). Überall `100dvh` verwenden – mit `100vh` als
+  vorangestelltem Fallback, wo es um die App-Shell geht.
+- **Scrollen**: Jeder scrollbare Container bekommt
+  `-webkit-overflow-scrolling: touch` (Schwung-Scrollen) und
+  `overscroll-behavior: contain` (kein Weiterreichen an die Seite
+  dahinter). `body` hat `overscroll-behavior: none`, damit die ganze
+  Seite nicht „gummibandet".
+- **Kein Auto-Zoom**: Eingabefelder haben unterhalb des Breakpoints
+  `font-size: 16px` – bei kleinerer Schrift zoomt iOS beim
+  Fokussieren automatisch hinein und kommt nicht wieder heraus.
+- **Tap-Verhalten**: `-webkit-tap-highlight-color: transparent` und
+  `touch-action: manipulation` auf `body` entfernen das graue
+  Aufblitzen und die Doppeltipp-Zoom-Verzögerung.
+
+## Back-Navigation (`js/core/back-stack.js`)
+
+Alles, was sich auf dem Handy als Overlay über den Inhalt legt
+(Vollbild-Detail, Modals, Drawer), muss sich mit dem Zurück-Button des
+Browsers **und** der iOS-Wischgeste schließen lassen – sonst verlässt
+der Nutzer damit versehentlich die App.
+
+Dafür gibt es `BackStack`:
+
+- `BackStack.push(id, onClose)` beim Öffnen: legt einen
+  History-Eintrag an; navigiert der Nutzer zurück, wird `onClose`
+  aufgerufen.
+- `BackStack.close(id)` beim Schließen per UI: ruft `onClose`
+  **synchron** auf (damit direkt danach laufender Code den neuen
+  Zustand sieht) und räumt den History-Eintrag anschließend per
+  `history.go()` ab. Das dadurch ausgelöste `popstate` wird intern
+  über `pendingSelfPops` übersprungen.
+- `BackStack.drop(id)` entfernt einen Eintrag kommentarlos, wenn ein
+  Overlay durch einen Layout-Wechsel (Mobile → Desktop) gar kein
+  Overlay mehr ist.
+
+Konvention pro Overlay: eine `openX()`-Methode (pusht), eine
+`closeX()`-Methode (geht über `BackStack.close`) und eine
+`closeXImmediate()`-Methode, die nur das DOM aufräumt und als
+`onClose` übergeben wird. Neue Overlays in neuen Domains müssen dieses
+Muster übernehmen.
 
 ## Gift-Domain: Detailansicht & aktuelle Erweiterungen
 
@@ -138,20 +201,37 @@ Die Gift-Domain zeigt Liste + Detail-Panel nebeneinander
 (`.gift-layout` in `gift.css`). Wichtige Konventionen, die bei
 weiteren Änderungen an dieser Domain beachtet werden sollten:
 
-- **Unabhängiges Scrollen**: `.gift-list-column` und `.gift-detail`
-  scrollen jeweils eigenständig (`overflow-y: auto`, `height: 100%`)
-  innerhalb des höhenfixierten `.gift-layout` (`height: 100%` über
-  `.domain-view.is-active` als Flex-Container, siehe
-  `css/base/layout.css`). Das Detail-Panel bleibt dadurch beim
-  Scrollen der Liste stehen.
-- **Auto-Auswahl & Tastatur-Navigation**
-  (`gift.controller.js`): Nach jedem Rendern der Liste
-  (`renderList()` → `ensureSelection()`) wird automatisch das erste
-  Gift der aktuellen (gefilterten/sortierten) Liste im Detail-Panel
-  angezeigt, falls die bisherige Auswahl nicht mehr enthalten ist.
-  `↑`/`↓` navigieren durch `this.currentList` (siehe
-  `handleKeydown`), außer ein Formularfeld ist fokussiert oder das
-  Modal ist offen.
+- **Unabhängiges Scrollen (nur Desktop)**: `.gift-list-column` und
+  `.gift-detail` scrollen jeweils eigenständig (`overflow-y: auto`,
+  `height: 100%`) innerhalb des höhenfixierten `.gift-layout`. Das
+  Detail-Panel bleibt dadurch beim Scrollen der Liste stehen. Auf dem
+  Handy ist das umgekehrt: dort scrollt `.app-content` als Ganzes und
+  die beiden Spalten stehen auf `height: auto` / `overflow: visible`.
+- **Liste und Detail sind auf dem Handy zwei „Seiten"**: Unterhalb von
+  768px legt sich `.gift-detail` als `position: fixed`-Vollbild über
+  die Liste. Ganz oben sitzt die klebende `.gift-detail__mobile-bar`
+  mit dem Button „‹ Zurück zur Liste" (`[data-gift-detail-close]`) und
+  dem Gift-Namen; das ✕ in `.gift-detail__actions` wird dort
+  ausgeblendet, weil es sonst doppelt wäre. Das Öffnen registriert
+  einen History-Eintrag, sodass auch Browser-Zurück und die
+  iOS-Wischgeste zurück zur Liste führen.
+- **Default-Auswahl (`ensureSelection()`)**: Am **Desktop** wird
+  automatisch das erste Gift der aktuellen (gefilterten/sortierten)
+  Liste im Detail-Panel angezeigt, sobald die bisherige Auswahl nicht
+  mehr in der Liste enthalten ist – sonst stünde dort ein leeres
+  Panel. Auf dem **Handy wird bewusst nichts vorausgewählt**, weil das
+  Detail dort die Liste überdeckt und man sich sonst bei jedem Start
+  und jedem Filterwechsel erst zurück navigieren müsste. Ein bereits
+  offenes Detail wird geschlossen, wenn sein Gift aus der Liste fällt.
+  Beim Wechsel des Breakpoints korrigiert `handleViewportChange()`
+  den Zustand entsprechend.
+- **Tastatur-Navigation** (`gift.controller.js`): `↑`/`↓` navigieren
+  durch `this.currentList` (siehe `handleKeydown`), `Escape` schließt
+  das Detail – außer ein Formularfeld ist fokussiert oder ein Modal
+  ist offen.
+- **Topbar-Titel**: `updateTopbarTitle()` schreibt den aktiven Filter
+  in die Topbar (`[data-topbar-title]`), weil die Sidebar auf dem
+  Handy zugeklappt ist und der Filter sonst nicht erkennbar wäre.
 - **Sortierung**: Die Liste wird immer nach `rangWeltweit` aufsteigend
   sortiert (Gifte ohne Rang ans Ende, siehe
   `compareByRangWeltweit`).

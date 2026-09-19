@@ -5,12 +5,14 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=3";
-import { validateGift } from "./gift.model.js?v=3";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm } from "./gift.ui.js?v=3";
-import { GiftFavorites } from "./gift.favorites.js?v=3";
-import { EditLock } from "../../core/edit-lock.js?v=3";
-import { debounce, showToast } from "../../core/utils.js?v=3";
+import { GiftApi } from "./gift.api.js?v=4";
+import { validateGift } from "./gift.model.js?v=4";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm } from "./gift.ui.js?v=4";
+import { GiftFavorites } from "./gift.favorites.js?v=4";
+import { EditLock } from "../../core/edit-lock.js?v=4";
+import { BackStack } from "../../core/back-stack.js?v=4";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=4";
+import { debounce, showToast } from "../../core/utils.js?v=4";
 
 export const GiftController = {
   selectedId: null,
@@ -34,6 +36,7 @@ export const GiftController = {
     this.editLockFormEl = document.querySelector("[data-edit-lock-form]");
     this.editLockErrorEl = document.querySelector("[data-edit-lock-error]");
     this.editLockPinEl = document.getElementById("edit-lock-pin");
+    this.topbarTitleEl = document.querySelector("[data-topbar-title]");
 
     this.filterButtons.forEach((button) => {
       button.addEventListener("click", () => this.setFilter(button.dataset.giftFilter));
@@ -74,7 +77,38 @@ export const GiftController = {
 
     await GiftApi.init();
     this.updateEditLockUi();
+    this.updateTopbarTitle();
+    onViewportChange((isMobile) => this.handleViewportChange(isMobile));
     await this.renderList();
+  },
+
+  /**
+   * Beim Wechsel zwischen Handy- und Desktop-Layout muss die Auswahl
+   * neu bewertet werden: Auf dem Desktop steht das Detail-Panel neben
+   * der Liste und darf vorbelegt sein, auf dem Handy überdeckt es die
+   * Liste und wird deshalb nur nach bewusstem Antippen geöffnet.
+   */
+  async handleViewportChange(isMobile) {
+    if (isMobile) {
+      if (this.selectedId !== null) {
+        this.closeDetail();
+      }
+      return;
+    }
+    // Ein auf dem Handy geöffnetes Detail ist auf dem Desktop kein
+    // Overlay mehr – der zugehörige History-Eintrag wäre irreführend.
+    BackStack.drop("gift-detail");
+    await this.ensureSelection();
+  },
+
+  /** Zeigt den aktiven Filter in der Topbar an – auf dem Handy ist die
+   *  Sidebar zugeklappt und der Filter sonst nicht erkennbar. */
+  updateTopbarTitle() {
+    const activeButton = Array.from(this.filterButtons).find(
+      (button) => button.dataset.giftFilter === this.activeFilter
+    );
+    const label = activeButton ? activeButton.textContent.trim() : "Alle";
+    this.topbarTitleEl.textContent = this.activeFilter === "all" ? "Gifte" : `Gifte · ${label}`;
   },
 
   /** Aktualisiert Toggle-Label + Sichtbarkeit des "+ Neues Gift"-Buttons je nach Sperrstatus. */
@@ -101,9 +135,17 @@ export const GiftController = {
     this.editLockErrorEl.hidden = true;
     this.editLockModalEl.hidden = false;
     this.editLockPinEl.focus();
+    BackStack.push("edit-lock-modal", () => this.closeEditLockModalImmediate());
   },
 
   closeEditLockModal() {
+    if (BackStack.close("edit-lock-modal")) {
+      return;
+    }
+    this.closeEditLockModalImmediate();
+  },
+
+  closeEditLockModalImmediate() {
     this.editLockModalEl.hidden = true;
   },
 
@@ -140,9 +182,19 @@ export const GiftController = {
     await this.ensureSelection();
   },
 
-  /** Wählt automatisch das erste Gift der aktuellen Liste aus, sobald
-   *  die aktuelle Auswahl nicht mehr Teil der (gefilterten) Liste ist. */
+  /**
+   * Desktop: wählt automatisch das erste Gift der aktuellen Liste aus,
+   * sobald die bisherige Auswahl nicht mehr Teil der (gefilterten)
+   * Liste ist – das Detail-Panel neben der Liste bliebe sonst leer.
+   *
+   * Handy: es wird bewusst nichts vorausgewählt, weil das Detail dort
+   * als Vollbild über der Liste liegt und man sich sonst bei jedem
+   * Start/Filterwechsel erst wieder zurück navigieren müsste. Ein
+   * bereits offenes Detail wird geschlossen, wenn sein Gift aus der
+   * Liste fällt.
+   */
   async ensureSelection() {
+    const mobile = isMobileViewport();
     if (this.currentList.length === 0) {
       if (this.selectedId !== null) {
         this.closeDetail();
@@ -150,9 +202,16 @@ export const GiftController = {
       return;
     }
     const stillPresent = this.currentList.some((gift) => gift.id === this.selectedId);
-    if (!stillPresent) {
-      await this.openDetail(this.currentList[0].id);
+    if (stillPresent) {
+      return;
     }
+    if (mobile) {
+      if (this.selectedId !== null) {
+        this.closeDetail();
+      }
+      return;
+    }
+    await this.openDetail(this.currentList[0].id);
   },
 
   /** Sortiert nach Rang weltweit aufsteigend (Platz 1 zuerst); Gifte
@@ -196,6 +255,12 @@ export const GiftController = {
     this.filterButtons.forEach((button) => {
       button.classList.toggle("is-active", button.dataset.giftFilter === filterId);
     });
+    this.updateTopbarTitle();
+    // Filterwechsel führt zurück auf die Liste statt in ein Detail,
+    // das evtl. gar nicht mehr zum Filter passt.
+    if (isMobileViewport() && this.selectedId !== null) {
+      this.closeDetail();
+    }
     this.renderList();
   },
 
@@ -219,6 +284,12 @@ export const GiftController = {
     }
     const tag = event.target.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+      return;
+    }
+    if (event.key === "Escape") {
+      if (this.selectedId !== null) {
+        this.closeDetail();
+      }
       return;
     }
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
@@ -255,7 +326,9 @@ export const GiftController = {
     });
   },
 
-  /** Zeigt ein Gift schön aufbereitet im rechten Detail-Panel an. */
+  /** Zeigt ein Gift schön aufbereitet im Detail-Panel an. Auf dem Handy
+   *  ist das ein Vollbild-Overlay, das als eigener History-Eintrag
+   *  registriert wird (Zurück-Button/Wischgeste schließen es). */
   async openDetail(id) {
     const gift = await GiftApi.getById(id);
     if (!gift) {
@@ -264,10 +337,23 @@ export const GiftController = {
     this.selectedId = id;
     this.detailEl.innerHTML = renderGiftDetail(gift);
     this.detailEl.hidden = false;
+    this.detailEl.scrollTop = 0;
     this.highlightSelectedCard();
+    if (isMobileViewport()) {
+      BackStack.push("gift-detail", () => this.closeDetailImmediate());
+    }
   },
 
+  /** Schließt das Detail – auf dem Handy über die History, damit kein
+   *  toter History-Eintrag zurückbleibt. */
   closeDetail() {
+    if (BackStack.close("gift-detail")) {
+      return;
+    }
+    this.closeDetailImmediate();
+  },
+
+  closeDetailImmediate() {
     this.selectedId = null;
     this.detailEl.hidden = true;
     this.detailEl.innerHTML = "";
@@ -281,6 +367,7 @@ export const GiftController = {
     this.modalTitleEl.textContent = "Neues Gift anlegen";
     fillGiftForm(this.formEl, null);
     this.modalEl.hidden = false;
+    BackStack.push("gift-modal", () => this.closeModalImmediate());
   },
 
   async openEditModal(id) {
@@ -294,9 +381,17 @@ export const GiftController = {
     this.modalTitleEl.textContent = "Gift bearbeiten";
     fillGiftForm(this.formEl, gift);
     this.modalEl.hidden = false;
+    BackStack.push("gift-modal", () => this.closeModalImmediate());
   },
 
   closeModal() {
+    if (BackStack.close("gift-modal")) {
+      return;
+    }
+    this.closeModalImmediate();
+  },
+
+  closeModalImmediate() {
     this.modalEl.hidden = true;
   },
 
@@ -387,9 +482,17 @@ export const GiftController = {
     this.zoomImgEl.alt = `Chemische Struktur von ${name}`;
     this.zoomCaptionEl.textContent = name;
     this.zoomModalEl.hidden = false;
+    BackStack.push("gift-structure-zoom", () => this.closeStructureZoomImmediate());
   },
 
   closeStructureZoom() {
+    if (BackStack.close("gift-structure-zoom")) {
+      return;
+    }
+    this.closeStructureZoomImmediate();
+  },
+
+  closeStructureZoomImmediate() {
     this.zoomModalEl.hidden = true;
     this.zoomImgEl.src = "";
   },

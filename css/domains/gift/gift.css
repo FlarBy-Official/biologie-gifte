@@ -55,6 +55,8 @@
   width: 720px;
   min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .gift-card--clickable {
@@ -75,6 +77,8 @@
   width: 860px;
   min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -82,6 +86,12 @@
 }
 
 .gift-detail[hidden] {
+  display: none;
+}
+
+/* Zurück-Leiste: nur auf dem Handy sichtbar, wo das Detail-Panel die
+   Liste als Vollbild überdeckt und sonst kein Weg zurück da wäre. */
+.gift-detail__mobile-bar {
   display: none;
 }
 
@@ -208,7 +218,9 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
-/* Mobile: Toolbar (Suche + Button) stapelt sich, volle Breite */
+/* Mobile: Liste und Detail sind getrennte "Seiten" – das Detail legt
+   sich als Vollbild über die Liste und wird über die Zurück-Leiste
+   (oder den Browser-/Wisch-Zurück) wieder geschlossen. */
 @media (max-width: 768px) {
   .gift-toolbar {
     flex-direction: column;
@@ -221,11 +233,25 @@
 
   .gift-layout {
     flex-direction: column;
+    overflow-x: visible;
+    height: auto;
   }
 
   .gift-list-column {
     flex: 1 1 auto;
     width: 100%;
+    height: auto;
+    overflow-y: visible;
+  }
+
+  /* Suchfeld bleibt beim Scrollen der Liste erreichbar */
+  .gift-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg-primary);
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) var(--space-3);
+    padding: var(--space-3);
   }
 
   .gift-list-column .card-grid {
@@ -233,13 +259,51 @@
   }
 
   .gift-detail {
-    flex: 1 1 auto;
-    width: 100%;
     position: fixed;
     inset: 0;
-    z-index: 150;
+    z-index: 200;
+    flex: none;
+    width: 100%;
+    height: 100dvh;
     max-height: 100dvh;
+    border: none;
     border-radius: 0;
+    padding: 0 calc(var(--space-3) + env(safe-area-inset-right))
+      calc(var(--space-6) + env(safe-area-inset-bottom))
+      calc(var(--space-3) + env(safe-area-inset-left));
+  }
+
+  .gift-detail__mobile-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    /* Voll bis an die Panel-Kanten, trotz seitlichem Padding des Panels */
+    margin: 0 calc(-1 * var(--space-3)) var(--space-3);
+    padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-3) var(--space-2);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .gift-detail__back {
+    flex-shrink: 0;
+  }
+
+  .gift-detail__mobile-title {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    color: var(--text-bright);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Das ✕ oben rechts wäre neben der Zurück-Leiste doppelt gemoppelt */
+  .gift-detail__actions [data-gift-detail-close] {
+    display: none;
   }
 
   .gift-detail__structure-img {

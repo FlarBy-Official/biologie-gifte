@@ -8,6 +8,9 @@
 html,
 body {
   height: 100%;
+  /* iOS: Textgröße beim Drehen nicht automatisch hochskalieren */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -17,6 +20,19 @@ body {
   color: var(--text-normal);
   background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
+  /* iOS: kein "Rubber-Band"-Mitscrollen der ganzen Seite und kein
+     graues Aufblitzen / Doppeltipp-Zoom beim Antippen von Buttons. */
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Alle scrollbaren Bereiche sollen auf iOS mit Schwung scrollen und
+   ihr Scrollen nicht an den Elternbereich weiterreichen. */
+.scroll-area,
+[data-scroll-area] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 h1,
@@ -48,6 +64,18 @@ button {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
+}
+
+/* iOS rendert type="search" sonst mit abgerundeter Systemoptik und
+   ignoriert eigene Paddings/Hintergründe. */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
 }
 
 a {

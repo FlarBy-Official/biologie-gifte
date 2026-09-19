@@ -6,11 +6,11 @@
  * Funktionen, die Daten in DOM/HTML umwandeln bzw. das Formular
  * befüllen/leeren.
  */
-import { escapeHtml } from "../../core/utils.js?v=3";
-import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=3";
-import { getStructureImagePath } from "./gift.structures.js?v=3";
-import { GiftFavorites } from "./gift.favorites.js?v=3";
-import { EditLock } from "../../core/edit-lock.js?v=3";
+import { escapeHtml } from "../../core/utils.js?v=4";
+import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=4";
+import { getStructureImagePath } from "./gift.structures.js?v=4";
+import { GiftFavorites } from "./gift.favorites.js?v=4";
+import { EditLock } from "../../core/edit-lock.js?v=4";
 
 const KATEGORIE_ICON = {
   Pflanze: "🌿",
@@ -136,6 +136,10 @@ export function renderGiftDetail(gift) {
     .join("");
 
   return `
+    <div class="gift-detail__mobile-bar">
+      <button type="button" class="btn btn--secondary gift-detail__back" data-gift-detail-close>‹ Zurück zur Liste</button>
+      <span class="gift-detail__mobile-title">${escapeHtml(gift.name)}</span>
+    </div>
     <div class="gift-detail__header">
       <div>
         <div class="gift-detail__title">${icon} ${escapeHtml(gift.name)}</div>

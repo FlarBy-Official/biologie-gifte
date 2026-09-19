@@ -339,6 +339,8 @@
 .modal__body {
   padding: var(--space-5);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   min-height: 0;
   flex: 1;
 }
@@ -405,11 +407,24 @@
     border-radius: 0;
   }
 
+  .modal__header {
+    padding-top: calc(var(--space-4) + env(safe-area-inset-top));
+  }
+
+  .modal__footer {
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  }
+
   .modal__header,
   .modal__body,
   .modal__footer {
-    padding-left: var(--space-3);
-    padding-right: var(--space-3);
+    padding-left: calc(var(--space-3) + env(safe-area-inset-left));
+    padding-right: calc(var(--space-3) + env(safe-area-inset-right));
+  }
+
+  /* Der Speichern-Button soll auf dem Handy die volle Breite nutzen */
+  .modal__footer .btn {
+    flex: 1;
   }
 
   .field-row {
@@ -426,10 +441,42 @@
     width: 100%;
   }
 
+  /* iOS zoomt beim Fokussieren automatisch hinein, wenn die Schrift
+     eines Eingabefelds kleiner als 16px ist. */
+  .input,
+  .select,
+  .textarea {
+    font-size: 16px;
+    padding: 12px var(--space-3);
+  }
+
+  .search-input-wrap .input {
+    padding-left: 36px;
+  }
+
+  /* Komfortable Touch-Ziele (Apple empfiehlt mind. 44x44px) */
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn--icon {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .checkbox-field {
+    min-height: 44px;
+  }
+
+  .checkbox-field input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+
   .toast-container {
     left: var(--space-3);
     right: var(--space-3);
-    bottom: var(--space-3);
+    bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
   }
 
   .toast {
@@ -477,6 +524,11 @@
 }
 
 @media (max-width: 768px) {
+  .structure-zoom-modal {
+    max-width: calc(100vw - var(--space-4));
+    margin-top: env(safe-area-inset-top);
+  }
+
   .structure-zoom-modal__img {
     width: min(80vw, 320px);
     height: min(80vw, 320px);
