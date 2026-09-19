@@ -174,6 +174,22 @@ weiteren Änderungen an dieser Domain beachtet werden sollten:
   im Repo liegen, damit die Anzeige unabhängig vom Internetzugang
   funktioniert. Neues Gift mit Struktur ergänzen: PNG ablegen +
   Eintrag in `GIFT_STRUCTURE_IMAGES` mit dem exakten `name`-Wert.
+- **Seed-Daten aus GitHub** (`gift.api.js#seedIfEmpty()` /
+  `fetchRemoteSeedData()`): Ist der LocalStorage leer (erster Start),
+  wird zuerst versucht, die aktuelle `data/gifte.json` per `fetch()`
+  von der öffentlichen GitHub-Raw-URL des Repos zu laden (Timeout
+  4s), damit im Repo gepflegte neue/aktualisierte Gifte auch bei
+  bereits installierten Nutzern ohne App-Update ankommen. Schlägt der
+  Fetch fehl (kein Netz, Domain blockiert, ungültiges/leeres Array),
+  wird automatisch auf die im Bundle mitgelieferten Seed-Daten
+  (`gift.seed.js`) zurückgefallen – die App funktioniert also auch
+  offline. **Wichtig**: `data/gifte.json` muss inhaltlich mit
+  `GIFT_SEED_DATA` in `gift.seed.js` synchron gehalten werden (gleiche
+  Feldstruktur, ohne generierte Felder `id`/`createdAt`/`updatedAt`);
+  bei Änderungen an den Seed-Giften beide Dateien aktualisieren.
+  Bereits befüllter LocalStorage (Storage nicht leer) wird nie
+  überschrieben – eigene Bearbeitungen/neue Gifte im Browser bleiben
+  erhalten.
 
 ## Ausführen
 
