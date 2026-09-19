@@ -1,0 +1,252 @@
+/*
+ * Grundlayout der App-Shell: Sidebar links (Domain-Navigation) +
+ * Hauptbereich rechts. Jede Domain rendert ihren Inhalt in die
+ * <section data-domain-view="..."> Container in index.html.
+ */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-2);
+  gap: var(--space-4);
+}
+
+.app-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  color: var(--text-bright);
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+}
+
+.app-sidebar__brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.app-nav__group {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.app-nav__item:hover {
+  background: var(--bg-modifier-hover);
+  color: var(--text-normal);
+}
+
+.app-nav__item.is-active {
+  background: var(--bg-primary);
+  color: var(--text-bright);
+}
+
+.app-nav__item-icon {
+  font-size: 16px;
+}
+
+.app-nav__item-label {
+  flex: 1;
+}
+
+.app-nav__item-chevron {
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+
+.app-nav__group.is-expanded .app-nav__item-chevron {
+  transform: rotate(180deg);
+}
+
+/* Akkordeon: Höhe des Submenüs wird per Grid-Trick animiert (0fr <-> 1fr),
+   damit kein fixer max-height-Wert nötig ist. */
+.app-nav__submenu-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+
+.app-nav__group.is-expanded .app-nav__submenu-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.app-nav__submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: var(--space-4);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.app-nav__subitem {
+  display: flex;
+  align-items: center;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  font-size: 13px;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.app-nav__subitem:hover {
+  background: var(--bg-modifier-hover);
+  color: var(--text-normal);
+}
+
+.app-nav__subitem.is-active {
+  background: var(--bg-primary);
+  color: var(--text-bright);
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg-primary);
+}
+
+.app-topbar {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-elevation-low);
+}
+
+.app-topbar__title {
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+.domain-view {
+  display: none;
+  height: 100%;
+}
+
+.domain-view.is-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-sidebar__theme-toggle {
+  margin: 0 var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: left;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.app-sidebar__theme-toggle:hover {
+  background: var(--bg-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* Mobile: Sidebar wird zur oben angehefteten, horizontal scrollbaren Leiste */
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-3);
+    overflow-x: auto;
+  }
+
+  .app-sidebar__brand {
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .app-nav {
+    flex-direction: row;
+    flex-shrink: 0;
+  }
+
+  .app-nav__group {
+    flex-shrink: 0;
+  }
+
+  .app-nav__submenu {
+    flex-direction: row;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  .app-nav__subitem {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .app-nav__item {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .app-sidebar__theme-toggle {
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  .app-content {
+    padding: var(--space-3);
+  }
+}

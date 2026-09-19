@@ -1,0 +1,505 @@
+/*
+ * Wiederverwendbare, domain-unabhängige UI-Bausteine.
+ * Domain-CSS-Dateien sollen diese Klassen verwenden statt eigene
+ * Buttons/Inputs neu zu erfinden.
+ */
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-sm);
+  border: none;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  transition: background 0.12s ease;
+}
+
+/* Ohne diese Regel würde `.btn { display: inline-flex }` das
+   [hidden]-Attribut der UA-Stylesheet-Regel überstimmen, sodass
+   versteckte Buttons trotz `hidden` weiterhin (ausgegraut) sichtbar
+   blieben statt komplett zu verschwinden. */
+.btn[hidden] {
+  display: none;
+}
+
+.btn--primary {
+  background: var(--brand);
+  color: var(--text-on-brand);
+}
+
+.btn--primary:hover {
+  background: var(--brand-hover);
+}
+
+.btn--danger {
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn--danger:hover {
+  background: rgba(218, 55, 60, 0.15);
+}
+
+.btn--secondary {
+  background: var(--bg-modifier-hover);
+  color: var(--text-normal);
+}
+
+.btn--secondary:hover {
+  background: var(--border-strong);
+}
+
+.btn--icon {
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn--icon:hover {
+  background: var(--bg-modifier-hover);
+  color: var(--text-normal);
+}
+
+.gift-favorite-btn {
+  color: var(--text-muted);
+}
+
+.gift-favorite-btn.is-favorite {
+  color: var(--warning);
+}
+
+.gift-favorite-btn:hover {
+  color: var(--warning);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Form-Felder */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.field__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.field__hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.field-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.field-row > .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px var(--space-3);
+  color: var(--text-normal);
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--brand);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-normal);
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+}
+
+/* Suche */
+.search-input-wrap {
+  position: relative;
+  max-width: 320px;
+}
+
+.search-input-wrap .input {
+  padding-left: 34px;
+}
+
+.search-input-wrap__icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Karten */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 1px solid var(--border-subtle);
+}
+
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.card__title {
+  color: var(--text-bright);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+}
+
+.card__subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.card__actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-normal);
+}
+
+.card__row {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.card__row-label {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--bg-modifier-hover);
+  color: var(--text-normal);
+}
+
+.badge--danger {
+  background: rgba(218, 55, 60, 0.18);
+  color: #ff8a8d;
+}
+
+.badge--success {
+  background: rgba(35, 165, 90, 0.18);
+  color: #55d485;
+}
+
+.badge--muted {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.badge--brand {
+  background: rgba(88, 101, 242, 0.2);
+  color: #9aa5ff;
+}
+
+/* Leerzustand */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 40px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  background: var(--bg-floating);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-elevation-high);
+  overflow: hidden;
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.modal__body {
+  padding: var(--space-5);
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 200;
+}
+
+.toast {
+  background: var(--bg-floating);
+  color: var(--text-normal);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevation-high);
+  border-left: 3px solid var(--brand);
+  font-size: var(--font-size-sm);
+  animation: toast-in 0.15s ease-out;
+}
+
+.toast--success {
+  border-left-color: var(--success);
+}
+
+.toast--error {
+  border-left-color: var(--danger);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile: Modal vollflächig, Formularzeilen gestapelt, Karten einspaltig */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 100dvh;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .modal__header,
+  .modal__body,
+  .modal__footer {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-input-wrap {
+    max-width: none;
+    width: 100%;
+  }
+
+  .toast-container {
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: var(--space-3);
+  }
+
+  .toast {
+    width: 100%;
+  }
+}
+
+/* Struktur-Zoom-Modal (vergrößerte Ansicht chemischer Strukturbilder) */
+.structure-zoom-overlay {
+  z-index: 150;
+}
+
+.structure-zoom-modal {
+  position: relative;
+  background: var(--bg-floating);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-elevation-high);
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.structure-zoom-modal__close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.structure-zoom-modal__img {
+  width: min(70vw, 480px);
+  height: min(70vw, 480px);
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+}
+
+.structure-zoom-modal__caption {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .structure-zoom-modal__img {
+    width: min(80vw, 320px);
+    height: min(80vw, 320px);
+  }
+}
+
+/* PIN-Eingabe-Modal (Bearbeiten freischalten) */
+.edit-lock-modal {
+  max-width: 360px;
+}
+
+.edit-lock-modal__hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.edit-lock-modal__error {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--danger);
+}
+
+.edit-lock-modal__error[hidden] {
+  display: none;
+}

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Biologie · Gifte</title>
+
+  <link rel="stylesheet" href="css/base/reset.css?v=3" />
+  <link rel="stylesheet" href="css/base/variables.css?v=3" />
+  <link rel="stylesheet" href="css/base/layout.css?v=3" />
+  <link rel="stylesheet" href="css/base/components.css?v=3" />
+  <link rel="stylesheet" href="css/domains/gift/gift.css?v=3" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="app-sidebar__brand">
+        <span class="app-sidebar__brand-icon">☠️</span>
+        <span>Biologie Wissen</span>
+      </div>
+      <nav class="app-nav">
+        <div class="app-nav__group is-expanded" data-nav-group="gift">
+          <button type="button" class="app-nav__item is-active" data-nav-item="gift" aria-expanded="true">
+            <span class="app-nav__item-icon">☠️</span>
+            <span class="app-nav__item-label">Gifte</span>
+            <span class="app-nav__item-chevron" aria-hidden="true">▾</span>
+          </button>
+          <div class="app-nav__submenu-wrapper">
+            <div class="app-nav__submenu">
+              <button type="button" class="app-nav__subitem is-active" data-gift-filter="all">Alle</button>
+              <button type="button" class="app-nav__subitem" data-gift-filter="favoriten">★ Favoriten</button>
+              <button type="button" class="app-nav__subitem" data-gift-filter="top50-weltweit">Top 50 weltweit</button>
+              <button type="button" class="app-nav__subitem" data-gift-filter="top10-weltweit">Top 10 weltweit</button>
+              <button type="button" class="app-nav__subitem" data-gift-filter="top25-europa">Top 25 Europa</button>
+              <button type="button" class="app-nav__subitem" data-gift-filter="synthetisch">Synthetische Gifte</button>
+              <button type="button" class="app-nav__subitem" data-gift-filter="natuerlich">Natürliche Gifte</button>
+            </div>
+          </div>
+        </div>
+        <!-- Weitere Domains werden hier als zusätzliche Nav-Gruppen (app-nav__group) ergänzt -->
+      </nav>
+      <button type="button" class="app-sidebar__theme-toggle" data-theme-toggle>☀️ Helles Design</button>
+      <button type="button" class="app-sidebar__theme-toggle" data-edit-lock-toggle>🔒 Bearbeiten freischalten</button>
+    </aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <span class="app-topbar__title">Gifte</span>
+      </header>
+
+      <div class="app-content">
+        <section class="domain-view is-active" data-domain-view="gift">
+          <div class="gift-layout">
+            <div class="gift-list-column">
+              <div class="gift-toolbar">
+                <div class="search-input-wrap">
+                  <span class="search-input-wrap__icon">🔍</span>
+                  <input type="search" class="input" placeholder="Gift suchen…" data-gift-search />
+                </div>
+                <button type="button" class="btn btn--secondary" data-gift-new hidden>+ Neues Gift</button>
+              </div>
+
+              <div data-gift-list></div>
+            </div>
+
+            <aside class="gift-detail" data-gift-detail hidden></aside>
+          </div>
+        </section>
+
+        <!-- Weitere Domains rendern hier ihre eigene <section data-domain-view="..."> -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Gift-Formular-Modal (Anlegen & Bearbeiten) -->
+  <div class="modal-overlay" data-gift-modal hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <span class="modal__title" data-gift-modal-title>Neues Gift anlegen</span>
+        <button type="button" class="btn btn--icon" data-gift-modal-close title="Schließen">✕</button>
+      </div>
+      <form data-gift-form>
+        <div class="modal__body">
+          <input type="hidden" name="id" />
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="gift-name">Name *</label>
+              <input class="input" id="gift-name" name="name" type="text" required />
+            </div>
+            <div class="field">
+              <label class="field__label" for="gift-wissenschaftlicherName">Wissenschaftlicher Name</label>
+              <input class="input" id="gift-wissenschaftlicherName" name="wissenschaftlicherName" type="text" />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="gift-kategorie">Kategorie</label>
+              <select class="select" id="gift-kategorie" name="kategorie">
+                <option value="Pflanze">Pflanze</option>
+                <option value="Tier">Tier</option>
+                <option value="Pilz">Pilz</option>
+                <option value="Chemikalie">Chemikalie</option>
+                <option value="Sonstiges">Sonstiges</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="gift-ort">Ort / Vorkommen</label>
+              <input class="input" id="gift-ort" name="ort" type="text" placeholder="z.B. Regenwälder Südamerikas" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="checkbox-field">
+              <input type="checkbox" name="natürlichenUrsprungs" />
+              Natürlichen Ursprungs
+            </label>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="checkbox-field">
+                <input type="checkbox" name="gefährlichFürMenschen" />
+                Gefährlich für Menschen
+              </label>
+            </div>
+            <div class="field">
+              <label class="checkbox-field">
+                <input type="checkbox" name="gefährlichFürTiere" />
+                Gefährlich für Tiere
+              </label>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="gift-dosisMenge">Letale Dosis</label>
+              <input class="input" id="gift-dosisMenge" name="dosisMenge" type="number" step="any" min="0" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="gift-dosisEinheit">Einheit</label>
+              <select class="select" id="gift-dosisEinheit" name="dosisEinheit">
+                <option value="mg/kg">mg/kg</option>
+                <option value="mg">mg</option>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="Stück">Stück</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="gift-dosisKontext">Kontext zur Dosis</label>
+            <input class="input" id="gift-dosisKontext" name="dosisKontext" type="text" placeholder="z.B. LD50 oral, Ratte" />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="gift-rangWeltweit">Rang weltweit</label>
+              <input class="input" id="gift-rangWeltweit" name="rangWeltweit" type="number" min="1" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="gift-rangEuropa">Rang Europa</label>
+              <input class="input" id="gift-rangEuropa" name="rangEuropa" type="number" min="1" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="gift-rangKontext">Kontext zum Ranking</label>
+            <input class="input" id="gift-rangKontext" name="rangKontext" type="text" placeholder="z.B. Basierend auf LD50 oral" />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="gift-symptome">Symptome</label>
+            <textarea class="textarea" id="gift-symptome" name="symptome"></textarea>
+          </div>
+          <div class="field">
+            <label class="field__label" for="gift-gegenmittel">Gegenmittel</label>
+            <textarea class="textarea" id="gift-gegenmittel" name="gegenmittel"></textarea>
+          </div>
+          <div class="field">
+            <label class="field__label" for="gift-quelle">Quelle</label>
+            <input class="input" id="gift-quelle" name="quelle" type="text" placeholder="z.B. Wikipedia-Artikel XY" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="gift-notizen">Notizen</label>
+            <textarea class="textarea" id="gift-notizen" name="notizen"></textarea>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secondary" data-gift-modal-cancel>Abbrechen</button>
+          <button type="submit" class="btn btn--primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Zoom-Ansicht für das Strukturbild im Detail-Panel -->
+  <div class="modal-overlay structure-zoom-overlay" data-gift-structure-zoom-modal hidden>
+    <div class="structure-zoom-modal">
+      <button type="button" class="btn btn--icon structure-zoom-modal__close" data-gift-structure-zoom-close title="Schließen">✕</button>
+      <img class="structure-zoom-modal__img" data-gift-structure-zoom-img src="" alt="" />
+      <div class="structure-zoom-modal__caption" data-gift-structure-zoom-caption></div>
+    </div>
+  </div>
+
+  <!-- PIN-Eingabe-Modal zum Freischalten von Bearbeiten/Hinzufügen/Löschen -->
+  <div class="modal-overlay" data-edit-lock-modal hidden>
+    <div class="modal edit-lock-modal">
+      <div class="modal__header">
+        <span class="modal__title">🔒 Bearbeiten freischalten</span>
+        <button type="button" class="btn btn--icon" data-edit-lock-modal-close title="Schließen">✕</button>
+      </div>
+      <form data-edit-lock-form>
+        <div class="modal__body">
+          <p class="edit-lock-modal__hint">PIN eingeben, um Hinzufügen/Bearbeiten/Löschen für diese Sitzung freizuschalten.</p>
+          <div class="field">
+            <label class="field__label" for="edit-lock-pin">PIN</label>
+            <input class="input" id="edit-lock-pin" name="pin" type="password" inputmode="numeric" autocomplete="off" autofocus />
+          </div>
+          <p class="edit-lock-modal__error" data-edit-lock-error hidden></p>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secondary" data-edit-lock-cancel>Abbrechen</button>
+          <button type="submit" class="btn btn--primary">Freischalten</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script type="module" src="js/app.js?v=3"></script>
+</body>
+</html>

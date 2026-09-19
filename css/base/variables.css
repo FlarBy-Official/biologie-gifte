@@ -1,0 +1,84 @@
+/*
+ * Zentrale Design-Tokens (Discord-angelehntes Dark-Theme).
+ * Alle Domain-CSS-Dateien sollen ausschließlich diese Variablen nutzen,
+ * damit das Theme an einer Stelle gepflegt werden kann.
+ */
+:root {
+  /* Grundflächen (von hell nach dunkel, wie Discord) */
+  --bg-tertiary: #1e1f22;
+  --bg-secondary: #2b2d31;
+  --bg-primary: #313338;
+  --bg-floating: #232428;
+  --bg-modifier-hover: rgba(78, 80, 88, 0.4);
+  --bg-input: #1e1f22;
+
+  /* Akzentfarben */
+  --brand: #5865f2;
+  --brand-hover: #4752c4;
+  --danger: #da373c;
+  --danger-hover: #a12828;
+  --success: #23a55a;
+  --warning: #f0b232;
+
+  /* Text */
+  --text-normal: #dbdee1;
+  --text-muted: #949ba4;
+  --text-bright: #f2f3f5;
+  --text-link: #00a8fc;
+  --text-on-brand: #ffffff;
+
+  /* Rahmen / Trennlinien */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  /* Radien & Abstände */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Schrift */
+  --font-family: "gg sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-size-sm: 13px;
+  --font-size-md: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+
+  /* Schatten */
+  --shadow-elevation-high: 0 8px 16px rgba(0, 0, 0, 0.24);
+  --shadow-elevation-low: 0 1px 0 rgba(0, 0, 0, 0.2);
+
+  /* Layout */
+  --sidebar-width: 240px;
+}
+
+/*
+ * Helles Theme: gleiche Design-Token-Namen, andere Werte. Wird über
+ * data-theme="light" auf <html> aktiviert (siehe core/theme.js).
+ * Domain-CSS-Dateien müssen hierfür nichts anpassen, da sie
+ * ausschließlich die Variablen oben verwenden.
+ */
+:root[data-theme="light"] {
+  --bg-tertiary: #e3e5e8;
+  --bg-secondary: #f2f3f5;
+  --bg-primary: #ffffff;
+  --bg-floating: #ffffff;
+  --bg-modifier-hover: rgba(6, 6, 7, 0.06);
+  --bg-input: #ebedef;
+
+  --border-subtle: rgba(6, 6, 7, 0.08);
+  --border-strong: rgba(6, 6, 7, 0.16);
+
+  --text-normal: #2e3338;
+  --text-muted: #5c6067;
+  --text-bright: #060607;
+  --text-on-brand: #ffffff;
+
+  --shadow-elevation-high: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-elevation-low: 0 1px 0 rgba(0, 0, 0, 0.06);
+}

@@ -1,0 +1,249 @@
+/*
+ * Domain-spezifisches Styling für "Gift". Nutzt ausschließlich
+ * Variablen/Klassen aus css/base/*. Nur Feinheiten, die spezifisch
+ * für die Gift-Darstellung sind, landen hier.
+ */
+
+.gift-card__dose {
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.gift-card__rank-list {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.gift-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: nowrap;
+}
+
+.gift-toolbar .search-input-wrap {
+  flex: 1;
+  min-width: 120px;
+}
+
+.gift-toolbar [data-gift-new] {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.gift-category-icon {
+  font-size: 14px;
+}
+
+/* Dreispaltiges Layout mit festen Breiten: Liste (max. 3 Kacheln
+   nebeneinander) links, Detail-Panel (bekommt die meiste Breite)
+   rechts. Die Sidebar/Menü-Spalte bleibt wie in css/base/layout.css. */
+.gift-layout {
+  display: flex;
+  gap: var(--space-4);
+  align-items: stretch;
+  overflow-x: auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.gift-list-column {
+  flex: 0 0 720px;
+  width: 720px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.gift-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.gift-card--clickable:hover {
+  border-color: var(--border-strong);
+}
+
+.card.is-selected {
+  border-color: var(--brand);
+}
+
+.gift-detail {
+  flex: 0 0 860px;
+  width: 860px;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.gift-detail[hidden] {
+  display: none;
+}
+
+.gift-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.gift-detail__structure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.gift-detail__structure[hidden] {
+  display: none;
+}
+
+.gift-detail__structure-img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+}
+
+.gift-detail__structure-zoom-trigger {
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: zoom-in;
+  transition: transform 0.1s ease;
+}
+
+.gift-detail__structure-zoom-trigger:hover {
+  transform: scale(1.03);
+}
+
+.gift-detail__structure-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.gift-detail__structure--empty {
+  padding: var(--space-4);
+}
+
+.gift-detail__structure-placeholder {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.gift-detail__title {
+  color: var(--text-bright);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+
+.gift-detail__subtitle {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.gift-detail__actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.gift-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.gift-detail__section {
+  margin-bottom: var(--space-4);
+}
+
+.gift-detail__section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.gift-detail__section-body {
+  font-size: var(--font-size-md);
+  color: var(--text-normal);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.gift-detail__source {
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Kartenraster der Gift-Domain: 2 Kacheln nebeneinander, damit die
+   Karten bei fester Listenbreite genug Platz haben und nicht
+   überlappen. */
+.gift-list-column .card-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Mobile: Toolbar (Suche + Button) stapelt sich, volle Breite */
+@media (max-width: 768px) {
+  .gift-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gift-toolbar .btn {
+    width: 100%;
+  }
+
+  .gift-layout {
+    flex-direction: column;
+  }
+
+  .gift-list-column {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .gift-list-column .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gift-detail {
+    flex: 1 1 auto;
+    width: 100%;
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .gift-detail__structure-img {
+    width: 150px;
+    height: 150px;
+  }
+}
