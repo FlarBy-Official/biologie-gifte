@@ -27,14 +27,6 @@ body {
   touch-action: manipulation;
 }
 
-/* Alle scrollbaren Bereiche sollen auf iOS mit Schwung scrollen und
-   ihr Scrollen nicht an den Elternbereich weiterreichen. */
-.scroll-area,
-[data-scroll-area] {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
 h1,
 h2,
 h3,

@@ -5,14 +5,15 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=4";
-import { validateGift } from "./gift.model.js?v=4";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm } from "./gift.ui.js?v=4";
-import { GiftFavorites } from "./gift.favorites.js?v=4";
-import { EditLock } from "../../core/edit-lock.js?v=4";
-import { BackStack } from "../../core/back-stack.js?v=4";
-import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=4";
-import { debounce, showToast } from "../../core/utils.js?v=4";
+import { GiftApi } from "./gift.api.js?v=5";
+import { validateGift } from "./gift.model.js?v=5";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm } from "./gift.ui.js?v=5";
+import { GiftFavorites } from "./gift.favorites.js?v=5";
+import { EditLock } from "../../core/edit-lock.js?v=5";
+import { BackStack } from "../../core/back-stack.js?v=5";
+import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=5";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=5";
+import { debounce, showToast } from "../../core/utils.js?v=5";
 
 export const GiftController = {
   selectedId: null,
@@ -22,6 +23,10 @@ export const GiftController = {
   async init() {
     this.listEl = document.querySelector("[data-gift-list]");
     this.detailEl = document.querySelector("[data-gift-detail]");
+    // Ursprünglicher Platz des Detail-Panels neben der Liste. Als
+    // Vollbild-Overlay wird es nach <body> umgehängt (siehe
+    // openDetail) und von dort wieder hierher zurückgesetzt.
+    this.detailHomeEl = this.detailEl.parentElement;
     this.searchEl = document.querySelector("[data-gift-search]");
     this.modalEl = document.querySelector("[data-gift-modal]");
     this.formEl = document.querySelector("[data-gift-form]");
@@ -96,8 +101,9 @@ export const GiftController = {
       return;
     }
     // Ein auf dem Handy geöffnetes Detail ist auf dem Desktop kein
-    // Overlay mehr – der zugehörige History-Eintrag wäre irreführend.
+    // Overlay mehr – History-Eintrag und Body-Platzierung zurücksetzen.
     BackStack.drop("gift-detail");
+    this.moveDetailToColumn();
     await this.ensureSelection();
   },
 
@@ -131,6 +137,9 @@ export const GiftController = {
   },
 
   openEditLockModal() {
+    // Das PIN-Modal wird aus der Sidebar heraus geöffnet – auf dem
+    // Handy muss die Drawer dafür aus dem Weg.
+    SidebarDrawer.close();
     this.editLockFormEl.reset();
     this.editLockErrorEl.hidden = true;
     this.editLockModalEl.hidden = false;
@@ -340,7 +349,29 @@ export const GiftController = {
     this.detailEl.scrollTop = 0;
     this.highlightSelectedCard();
     if (isMobileViewport()) {
+      this.moveDetailToOverlay();
       BackStack.push("gift-detail", () => this.closeDetailImmediate());
+    }
+  },
+
+  /**
+   * Hängt das Detail-Panel als Vollbild-Overlay direkt unter <body>.
+   *
+   * Grund: WebKit/iOS behandelt `position: fixed` innerhalb eines
+   * scrollenden Containers fehlerhaft – das Panel würde dort an
+   * `.app-content` ausgerichtet und die Zurück-Leiste unter der Topbar
+   * verschwinden. Auf <body> gibt es keinen scrollenden Vorfahren.
+   */
+  moveDetailToOverlay() {
+    if (this.detailEl.parentElement !== document.body) {
+      document.body.appendChild(this.detailEl);
+    }
+  },
+
+  /** Setzt das Detail-Panel zurück an seinen Platz neben der Liste. */
+  moveDetailToColumn() {
+    if (this.detailEl.parentElement !== this.detailHomeEl) {
+      this.detailHomeEl.appendChild(this.detailEl);
     }
   },
 
@@ -357,6 +388,7 @@ export const GiftController = {
     this.selectedId = null;
     this.detailEl.hidden = true;
     this.detailEl.innerHTML = "";
+    this.moveDetailToColumn();
     this.highlightSelectedCard();
   },
 

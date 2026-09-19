@@ -8,81 +8,12 @@
  * Neue Domain hinzufügen: hier importieren + in DOMAINS registrieren,
  * siehe AGENTS.md.
  */
-import { GiftController } from "./domains/gift/gift.controller.js?v=4";
-import { ThemeToggle } from "./core/theme.js?v=4";
-import { BackStack } from "./core/back-stack.js?v=4";
-import { isMobileViewport } from "./core/viewport.js?v=4";
+import { GiftController } from "./domains/gift/gift.controller.js?v=5";
+import { ThemeToggle } from "./core/theme.js?v=5";
+import { BackStack } from "./core/back-stack.js?v=5";
+import { SidebarDrawer } from "./core/sidebar-drawer.js?v=5";
 
 const DOMAINS = [{ key: "gift", controller: GiftController }];
-
-/**
- * Mobile Navigation: Die Sidebar liegt auf schmalen Bildschirmen als
- * Drawer über dem Inhalt. Sie ist per ☰ erreichbar und schließt sich
- * bei Auswahl, Tippen auf den Hintergrund, Escape und über den
- * Zurück-Button/die Wischgeste des Browsers (via BackStack).
- */
-export const SidebarDrawer = {
-  init() {
-    this.shellEl = document.querySelector("[data-app-shell]");
-    this.backdropEl = document.querySelector("[data-sidebar-backdrop]");
-    this.toggleEl = document.querySelector("[data-sidebar-toggle]");
-    this.sidebarEl = document.querySelector("[data-app-sidebar]");
-
-    this.toggleEl.addEventListener("click", () => this.toggle());
-    this.backdropEl.addEventListener("click", () => this.close());
-    document.querySelector("[data-sidebar-close]").addEventListener("click", () => this.close());
-
-    // Nach jeder Auswahl im Menü soll die Liste wieder sichtbar sein.
-    this.sidebarEl.querySelectorAll("[data-nav-item], [data-gift-filter]").forEach((button) => {
-      button.addEventListener("click", () => {
-        if (isMobileViewport()) {
-          this.close();
-        }
-      });
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && this.isOpen()) {
-        this.close();
-      }
-    });
-  },
-
-  isOpen() {
-    return this.shellEl.classList.contains("is-drawer-open");
-  },
-
-  toggle() {
-    if (this.isOpen()) {
-      this.close();
-    } else {
-      this.open();
-    }
-  },
-
-  open() {
-    this.shellEl.classList.add("is-drawer-open");
-    this.backdropEl.hidden = false;
-    this.toggleEl.setAttribute("aria-expanded", "true");
-    BackStack.push("sidebar-drawer", () => this.closeImmediate());
-  },
-
-  close() {
-    if (!this.isOpen()) {
-      return;
-    }
-    if (BackStack.close("sidebar-drawer")) {
-      return;
-    }
-    this.closeImmediate();
-  },
-
-  closeImmediate() {
-    this.shellEl.classList.remove("is-drawer-open");
-    this.backdropEl.hidden = true;
-    this.toggleEl.setAttribute("aria-expanded", "false");
-  },
-};
 
 function initNavigation() {
   const navItems = document.querySelectorAll("[data-nav-item]");

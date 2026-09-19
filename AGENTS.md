@@ -40,6 +40,7 @@ js/
     utils.js                 Kleine Helfer (IDs, Datum, Escaping, Toast-Anzeige)
     viewport.js              Mobile-Breakpoint als einzige Quelle der Wahrheit für JS
     back-stack.js            Overlays (Detail/Modals/Drawer) an die Browser-History koppeln
+    sidebar-drawer.js        Mobile Off-Canvas-Navigation (☰)
     theme.js                 Umschalten zwischen dunklem und hellem Design
     edit-lock.js             PIN-Sperre für Anlegen/Bearbeiten/Löschen
   domains/
@@ -124,7 +125,38 @@ Das gilt für Basis-Layout **und** für jede Domain:
   `.app-sidebar-backdrop`. Die Drawer schließt bei Auswahl eines
   Nav-/Filter-Eintrags, Tippen auf den Backdrop, `Escape` und über den
   Zurück-Button (siehe „Back-Navigation"). Die Logik dazu steckt in
-  `SidebarDrawer` in `js/app.js`.
+  `js/core/sidebar-drawer.js`.
+
+### Scroll-Architektur (häufige Fehlerquelle)
+
+- Am **Desktop** scrollen `.gift-list-column` und `.gift-detail`
+  getrennt innerhalb der auf Bildschirmhöhe fixierten Shell. Auf dem
+  **Handy** scrollt stattdessen `.app-content` als Ganzes; die inneren
+  Spalten stehen dort auf `height: auto` / `overflow: visible`.
+- **Jedes Flex-Item, das einen scrollenden Bereich enthält, braucht
+  `min-height: 0`** (bzw. `min-width: 0` in Zeilenrichtung). Ohne das
+  gilt die Inhaltshöhe als Mindesthöhe: `.app-main` wuchs dadurch auf
+  die volle Listenhöhe an, `.app-content` wurde nie scrollbar und die
+  Liste ließ sich auf dem Handy gar nicht scrollen. `.app-main` und
+  `.app-content` setzen das deshalb explizit.
+- **Kein `-webkit-overflow-scrolling: touch` verwenden.** Es ist seit
+  iOS 13 wirkungslos (Schwung-Scrollen ist Standard), erzeugt aber in
+  WebKit einen Container, der `position: fixed`-Nachfahren fehlerhaft
+  ausrichtet und beschneidet.
+- **Vollbild-Overlays gehören nicht in einen scrollenden Container.**
+  Das Detail-Panel wird beim Öffnen auf dem Handy per
+  `moveDetailToOverlay()` nach `<body>` umgehängt und beim Schließen
+  per `moveDetailToColumn()` wieder neben die Liste gesetzt – sonst
+  richtet iOS das `position: fixed`-Panel an `.app-content` aus und die
+  Zurück-Leiste verschwindet unter der Topbar.
+
+### Stapelreihenfolge
+
+Alle `z-index`-Werte kommen aus den Tokens in `css/base/variables.css`
+(`--z-topbar` < `--z-detail-overlay` < `--z-drawer-backdrop` <
+`--z-drawer` < `--z-modal` < `--z-zoom` < `--z-toast`). Keine nackten
+Zahlen in Domain-CSS schreiben – sonst landet z.B. ein Modal hinter dem
+Vollbild-Detail.
 - **Komponenten** (`css/base/components.css`): `.modal` ist unterhalb
   des Breakpoints vollflächig (kein `max-width`, `border-radius: 0`,
   `max-height: 100dvh`), `.field-row` stapelt seine Felder
@@ -157,10 +189,9 @@ versehentlich zurückgedreht werden:
   (Adressleiste). Überall `100dvh` verwenden – mit `100vh` als
   vorangestelltem Fallback, wo es um die App-Shell geht.
 - **Scrollen**: Jeder scrollbare Container bekommt
-  `-webkit-overflow-scrolling: touch` (Schwung-Scrollen) und
   `overscroll-behavior: contain` (kein Weiterreichen an die Seite
   dahinter). `body` hat `overscroll-behavior: none`, damit die ganze
-  Seite nicht „gummibandet".
+  Seite nicht „gummibandet". Siehe zusätzlich „Scroll-Architektur".
 - **Kein Auto-Zoom**: Eingabefelder haben unterhalb des Breakpoints
   `font-size: 16px` – bei kleinerer Schrift zoomt iOS beim
   Fokussieren automatisch hinein und kommt nicht wieder heraus.

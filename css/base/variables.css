@@ -55,6 +55,19 @@
 
   /* Layout */
   --sidebar-width: 240px;
+
+  /*
+   * Stapelreihenfolge zentral, damit sich Overlays nicht gegenseitig
+   * verdecken. Reihenfolge von unten nach oben:
+   * Topbar < Vollbild-Detail < Drawer-Backdrop < Drawer < Modals < Zoom < Toasts
+   */
+  --z-topbar: 10;
+  --z-detail-overlay: 200;
+  --z-drawer-backdrop: 250;
+  --z-drawer: 300;
+  --z-modal: 400;
+  --z-zoom: 450;
+  --z-toast: 500;
 }
 
 /*
