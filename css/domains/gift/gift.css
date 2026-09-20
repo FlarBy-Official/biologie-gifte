@@ -393,9 +393,15 @@ body.is-resizing-gift-columns * {
     height: 150px;
   }
 
-  .gift-compare__table {
-    display: block;
-    overflow-x: auto;
+  /* Suchfeld und Knoepfe stehen auf dem Handy untereinander (siehe
+     .gift-toolbar oben) und nehmen die volle Breite ein. */
+  .gift-toolbar .search-input-wrap {
+    width: 100%;
+  }
+
+  .gift-toolbar [data-gift-compare],
+  .gift-toolbar [data-gift-new] {
+    white-space: normal;
   }
 }
 
@@ -430,4 +436,69 @@ body.is-resizing-gift-columns * {
 .gift-compare__cell--highlight {
   color: var(--danger);
   font-weight: 700;
+}
+
+/* Am Desktop steht der Gift-Name schon in der Kopfzeile der Tabelle. */
+.gift-compare__who {
+  display: none;
+}
+
+/* Handy-Layout fuer das Vergleichsmodal. Steht absichtlich am Ende
+   der Datei, damit es die Desktop-Regeln darueber ueberschreibt. */
+@media (max-width: 768px) {
+  /* Vergleich auf dem Handy: Die Tabelle wird nicht seitwaerts
+     gescrollt (das findet man kaum), sondern in kleine Karten
+     gestapelt. Pro Feld eine Karte mit Ueberschrift, darunter die
+     zwei Gifte nebeneinander. */
+  .gift-compare__table,
+  .gift-compare__table tbody,
+  .gift-compare__table tr,
+  .gift-compare__table td {
+    display: block;
+    width: auto;
+  }
+
+  .gift-compare__table thead {
+    display: none;
+  }
+
+  .gift-compare__table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+  }
+
+  .gift-compare__table td {
+    border-bottom: none;
+    padding: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .gift-compare__label {
+    grid-column: 1 / -1;
+    width: auto;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .gift-compare__who {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gift-compare__hint {
+    font-size: 15px;
+  }
 }

@@ -8,6 +8,8 @@
  * merkt sich die zuletzt gewählte Breite in LocalStorage, damit sie
  * über Neuladen hinweg erhalten bleibt.
  */
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=11";
+
 const WIDTH_STORAGE_KEY = "bg.gift.listWidth";
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 1000;
@@ -27,11 +29,25 @@ function readStoredWidth() {
  *  ist die Spalte, deren Breite verändert wird, `resizerEl` der
  *  ziehbare Handle dazwischen. */
 export function initGiftResizer({ listColumnEl, resizerEl }) {
+  /* Auf dem Handy darf hier keine feste Pixelbreite am Element
+     kleben: Eine Breite direkt am Element ist staerker als jede
+     CSS-Regel, dadurch blieb die Liste 720px breit und ragte rechts
+     aus dem Bildschirm heraus. Deshalb wird die Breite auf dem Handy
+     wieder entfernt und erst am Desktop neu gesetzt. */
+  function clearWidth() {
+    listColumnEl.style.flexBasis = "";
+    listColumnEl.style.width = "";
+  }
+
   function applyWidth(width) {
     const rounded = Math.round(width);
+    resizerEl.setAttribute("aria-valuenow", String(rounded));
+    if (isMobileViewport()) {
+      clearWidth();
+      return rounded;
+    }
     listColumnEl.style.flexBasis = `${rounded}px`;
     listColumnEl.style.width = `${rounded}px`;
-    resizerEl.setAttribute("aria-valuenow", String(rounded));
     return rounded;
   }
 
@@ -42,6 +58,7 @@ export function initGiftResizer({ listColumnEl, resizerEl }) {
   resizerEl.setAttribute("aria-valuemin", String(MIN_WIDTH));
   resizerEl.setAttribute("aria-valuemax", String(MAX_WIDTH));
   applyWidth(readStoredWidth());
+  onViewportChange(() => applyWidth(readStoredWidth()));
 
   let dragStartX = 0;
   let dragStartWidth = 0;
@@ -62,6 +79,7 @@ export function initGiftResizer({ listColumnEl, resizerEl }) {
   }
 
   resizerEl.addEventListener("pointerdown", (event) => {
+    if (isMobileViewport()) return;
     dragging = true;
     dragStartX = event.clientX;
     dragStartWidth = listColumnEl.getBoundingClientRect().width;

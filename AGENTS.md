@@ -119,6 +119,25 @@ zentral angepasst werden kann.
 ## Responsive Design (Mobile-First-Pflicht)
 
 Die App muss auf dem Handy genauso gut nutzbar sein wie am Desktop.
+
+> **Pflicht bei jeder Änderung:** Wer eine neue Funktion baut oder
+> eine bestehende ändert, macht das Design **immer auch fürs Handy**
+> mit. Eine Aufgabe ist erst fertig, wenn sie bei 390px Breite
+> genauso gut aussieht und bedienbar ist wie am Desktop. Dazu
+> gehört:
+>
+> - Einen `@media (max-width: 768px)`-Block für das neue Bauteil
+>   schreiben (nicht auf Desktop-Breiten verlassen).
+> - Nichts darf seitlich aus dem Bildschirm herausragen. Breite
+>   Tabellen werden auf dem Handy gestapelt statt seitwärts
+>   gescrollt (Beispiel: `.gift-compare__table`).
+> - Knöpfe mindestens 44px hoch und mit dem Daumen gut treffbar.
+> - Keine festen Pixelbreiten per JS am Element setzen, ohne sie auf
+>   dem Handy wieder zu entfernen – eine Breite direkt am Element ist
+>   stärker als jede CSS-Regel (siehe `gift.resizer.js`).
+> - Vorher am Handy-Layout nachsehen (Browser auf schmale Breite
+>   ziehen oder Screenshot bei 390x844).
+
 Das gilt für Basis-Layout **und** für jede Domain:
 
 - **Basis-Layout** (`css/base/layout.css`): Unterhalb von 768px wird
@@ -267,6 +286,18 @@ weiteren Änderungen an dieser Domain beachtet werden sollten:
 - **Topbar-Titel**: `updateTopbarTitle()` schreibt den aktiven Filter
   in die Topbar (`[data-topbar-title]`), weil die Sidebar auf dem
   Handy zugeklappt ist und der Filter sonst nicht erkennbar wäre.
+- **Vergleich (⚖️)**: Zwei Gifte werden über den ⚖️-Button markiert
+  (`gift.compare-selection.js`), danach öffnet sich das
+  Vergleichsmodal mit `renderGiftCompareTable()`. Am Desktop ist das
+  eine Tabelle mit Kopfzeile. Auf dem Handy werden die Zeilen per CSS
+  zu kleinen Karten gestapelt (Feldname oben, darunter die zwei
+  Gifte nebeneinander) – deshalb schreibt jede Zelle den Gift-Namen
+  als `.gift-compare__who` mit, das am Desktop ausgeblendet ist. Der
+  Handy-Block dafür steht **am Ende** von `gift.css`, damit er die
+  Desktop-Regeln überschreibt.
+- **Breiten-Slider** (`gift.resizer.js`): Nur am Desktop aktiv. Auf
+  dem Handy werden `width`/`flex-basis` wieder vom Element entfernt
+  (`clearWidth()`), sonst wäre die Liste dort 720px breit.
 - **Sortierung**: Die Liste wird immer nach `rangWeltweit` aufsteigend
   sortiert (Gifte ohne Rang ans Ende, siehe
   `compareByRangWeltweit`).

@@ -6,12 +6,12 @@
  * Funktionen, die Daten in DOM/HTML umwandeln bzw. das Formular
  * befüllen/leeren.
  */
-import { escapeHtml } from "../../core/utils.js?v=10";
-import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=10";
-import { getStructureImagePath } from "./gift.structures.js?v=10";
-import { GiftFavorites } from "./gift.favorites.js?v=10";
-import { GiftCompareSelection } from "./gift.compare-selection.js?v=10";
-import { EditLock } from "../../core/edit-lock.js?v=10";
+import { escapeHtml } from "../../core/utils.js?v=11";
+import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=11";
+import { getStructureImagePath } from "./gift.structures.js?v=11";
+import { GiftFavorites } from "./gift.favorites.js?v=11";
+import { GiftCompareSelection } from "./gift.compare-selection.js?v=11";
+import { EditLock } from "../../core/edit-lock.js?v=11";
 
 const KATEGORIE_ICON = {
   Pflanze: "🌿",
@@ -169,18 +169,22 @@ export function renderGiftDetail(gift) {
   `;
 }
 
-function compareRow(label, valueA, valueB) {
+/* `nameA`/`nameB` werden in jede Zelle als kleine Überschrift
+   geschrieben. Am Desktop sind sie versteckt (die Tabelle hat ja
+   oben eine Kopfzeile), auf dem Handy werden die Zeilen zu kleinen
+   Karten gestapelt – dort braucht jede Zelle ihren eigenen Namen. */
+function compareRow(label, valueA, valueB, nameA, nameB) {
   return `
     <tr>
       <td class="gift-compare__label">${escapeHtml(label)}</td>
-      <td>${escapeHtml(valueA)}</td>
-      <td>${escapeHtml(valueB)}</td>
+      <td><span class="gift-compare__who">${escapeHtml(nameA)}</span>${escapeHtml(valueA)}</td>
+      <td><span class="gift-compare__who">${escapeHtml(nameB)}</span>${escapeHtml(valueB)}</td>
     </tr>
   `;
 }
 
 /** Vergleichszeile für Ränge: markiert die niedrigere (= gefährlichere) Platzierung mit 🏆. */
-function compareRankRow(label, rankA, rankB) {
+function compareRankRow(label, rankA, rankB, nameA, nameB) {
   const aIsBetter = rankA != null && (rankB == null || rankA < rankB);
   const bIsBetter = rankB != null && (rankA == null || rankB < rankA);
   const textA = rankA != null ? `#${rankA}` : "unbekannt";
@@ -188,8 +192,8 @@ function compareRankRow(label, rankA, rankB) {
   return `
     <tr>
       <td class="gift-compare__label">${escapeHtml(label)}</td>
-      <td class="${aIsBetter ? "gift-compare__cell--highlight" : ""}">${escapeHtml(textA)}${aIsBetter ? " 🏆" : ""}</td>
-      <td class="${bIsBetter ? "gift-compare__cell--highlight" : ""}">${escapeHtml(textB)}${bIsBetter ? " 🏆" : ""}</td>
+      <td class="${aIsBetter ? "gift-compare__cell--highlight" : ""}"><span class="gift-compare__who">${escapeHtml(nameA)}</span>${escapeHtml(textA)}${aIsBetter ? " 🏆" : ""}</td>
+      <td class="${bIsBetter ? "gift-compare__cell--highlight" : ""}"><span class="gift-compare__who">${escapeHtml(nameB)}</span>${escapeHtml(textB)}${bIsBetter ? " 🏆" : ""}</td>
     </tr>
   `;
 }
@@ -204,21 +208,25 @@ export function renderGiftCompareTable(giftA, giftB) {
     const marked = giftA ?? giftB;
     return `<p class="gift-compare__hint">„${escapeHtml(marked.name)}“ ist markiert – markiere noch ein zweites Gift mit ⚖️, um den Vergleich zu sehen.</p>`;
   }
+  const nameA = giftA.name;
+  const nameB = giftB.name;
   const rows = [
-    compareRow("Kategorie", giftA.kategorie, giftB.kategorie),
+    compareRow("Kategorie", giftA.kategorie, giftB.kategorie, nameA, nameB),
     compareRow(
       "Ursprung",
       giftA.natürlichenUrsprungs ? "natürlich" : "synthetisch",
       giftB.natürlichenUrsprungs ? "natürlich" : "synthetisch",
+      nameA,
+      nameB,
     ),
-    compareRow("Gefährlich f. Menschen", giftA.gefährlichFürMenschen ? "Ja" : "Nein", giftB.gefährlichFürMenschen ? "Ja" : "Nein"),
-    compareRow("Gefährlich f. Tiere", giftA.gefährlichFürTiere ? "Ja" : "Nein", giftB.gefährlichFürTiere ? "Ja" : "Nein"),
-    compareRow("Letale Dosis", renderDosis(giftA), renderDosis(giftB)),
-    compareRankRow("Rang weltweit", giftA.rangWeltweit, giftB.rangWeltweit),
-    compareRankRow("Rang Europa", giftA.rangEuropa, giftB.rangEuropa),
-    compareRow("Vorkommen", giftA.ort || "–", giftB.ort || "–"),
-    compareRow("Symptome", giftA.symptome || "–", giftB.symptome || "–"),
-    compareRow("Gegenmittel", giftA.gegenmittel || "–", giftB.gegenmittel || "–"),
+    compareRow("Gefährlich f. Menschen", giftA.gefährlichFürMenschen ? "Ja" : "Nein", giftB.gefährlichFürMenschen ? "Ja" : "Nein", nameA, nameB),
+    compareRow("Gefährlich f. Tiere", giftA.gefährlichFürTiere ? "Ja" : "Nein", giftB.gefährlichFürTiere ? "Ja" : "Nein", nameA, nameB),
+    compareRow("Letale Dosis", renderDosis(giftA), renderDosis(giftB), nameA, nameB),
+    compareRankRow("Rang weltweit", giftA.rangWeltweit, giftB.rangWeltweit, nameA, nameB),
+    compareRankRow("Rang Europa", giftA.rangEuropa, giftB.rangEuropa, nameA, nameB),
+    compareRow("Vorkommen", giftA.ort || "–", giftB.ort || "–", nameA, nameB),
+    compareRow("Symptome", giftA.symptome || "–", giftB.symptome || "–", nameA, nameB),
+    compareRow("Gegenmittel", giftA.gegenmittel || "–", giftB.gegenmittel || "–", nameA, nameB),
   ].join("");
 
   return `
