@@ -2,6 +2,8 @@
 
 > Ich bin ein 11 jähriges Kind, bitte schreibe keine komplizierten Wörter rein.
 
+> Wenn eine Task fertig (completed) ist, soll automatisch gepusht werden.
+
 Dieses Dokument beschreibt die Architektur der App, damit neue Domains
 ("kleine Apps") konsistent nach dem gleichen Muster hinzugefügt werden
 können.
