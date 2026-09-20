@@ -5,17 +5,17 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=8";
-import { validateGift } from "./gift.model.js?v=8";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareTable } from "./gift.ui.js?v=8";
-import { GiftFavorites } from "./gift.favorites.js?v=8";
-import { GiftCompareSelection } from "./gift.compare-selection.js?v=8";
-import { initGiftResizer } from "./gift.resizer.js?v=8";
-import { EditLock } from "../../core/edit-lock.js?v=8";
-import { BackStack } from "../../core/back-stack.js?v=8";
-import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=8";
-import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=8";
-import { debounce, showToast } from "../../core/utils.js?v=8";
+import { GiftApi } from "./gift.api.js?v=9";
+import { validateGift } from "./gift.model.js?v=9";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareTable } from "./gift.ui.js?v=9";
+import { GiftFavorites } from "./gift.favorites.js?v=9";
+import { GiftCompareSelection } from "./gift.compare-selection.js?v=9";
+import { initGiftResizer } from "./gift.resizer.js?v=9";
+import { EditLock } from "../../core/edit-lock.js?v=9";
+import { BackStack } from "../../core/back-stack.js?v=9";
+import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=9";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=9";
+import { debounce, showToast } from "../../core/utils.js?v=9";
 
 export const GiftController = {
   selectedId: null,
@@ -578,15 +578,13 @@ export const GiftController = {
   },
 
   /** Schaltet die Vergleichs-Markierung eines Gifts um (⚖️-Button auf
-   *  Karte/Detail). Sobald zwei Gifte markiert sind, öffnet sich das
-   *  Vergleichsmodal automatisch mit der fertigen Tabelle – ein
-   *  Auswahl-Dialog mit zwei Dropdowns entfällt dadurch. */
+   *  Karte/Detail). Sind bereits zwei Gifte markiert, ersetzt die
+   *  neue Markierung die zweite (siehe gift.compare-selection.js).
+   *  Sobald zwei Gifte markiert sind, öffnet sich das Vergleichsmodal
+   *  automatisch mit der fertigen Tabelle – ein Auswahl-Dialog mit
+   *  zwei Dropdowns entfällt dadurch. */
   toggleCompareMark(id) {
     const result = GiftCompareSelection.toggle(id);
-    if (!result.changed) {
-      showToast("Es sind bereits zwei Gifte markiert. Erst eine Markierung aufheben.", "info");
-      return;
-    }
     this.updateCompareMarkUi();
     if (result.full) {
       this.openCompareModal();
@@ -607,6 +605,10 @@ export const GiftController = {
         card.classList.toggle("gift-card--compare-marked", marked);
       }
     });
+    const detailBadgeEl = this.detailEl.querySelector("[data-gift-compare-badge]");
+    if (detailBadgeEl) {
+      detailBadgeEl.hidden = !GiftCompareSelection.isMarked(this.selectedId);
+    }
   },
 
   /** Öffnet das Vergleichsmodal mit den aktuell markierten Giften (⚖️),

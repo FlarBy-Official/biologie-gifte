@@ -6,12 +6,12 @@
  * Funktionen, die Daten in DOM/HTML umwandeln bzw. das Formular
  * befüllen/leeren.
  */
-import { escapeHtml } from "../../core/utils.js?v=8";
-import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=8";
-import { getStructureImagePath } from "./gift.structures.js?v=8";
-import { GiftFavorites } from "./gift.favorites.js?v=8";
-import { GiftCompareSelection } from "./gift.compare-selection.js?v=8";
-import { EditLock } from "../../core/edit-lock.js?v=8";
+import { escapeHtml } from "../../core/utils.js?v=9";
+import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=9";
+import { getStructureImagePath } from "./gift.structures.js?v=9";
+import { GiftFavorites } from "./gift.favorites.js?v=9";
+import { GiftCompareSelection } from "./gift.compare-selection.js?v=9";
+import { EditLock } from "../../core/edit-lock.js?v=9";
 
 const KATEGORIE_ICON = {
   Pflanze: "🌿",
@@ -127,6 +127,9 @@ function renderStructureImage(gift) {
 export function renderGiftDetail(gift) {
   const icon = KATEGORIE_ICON[gift.kategorie] ?? "☠️";
   const badges = [
+    GiftCompareSelection.isMarked(gift.id)
+      ? '<span class="badge badge--brand" data-gift-compare-badge>⚖️ zum Vergleich markiert</span>'
+      : '<span class="badge badge--brand" data-gift-compare-badge hidden>⚖️ zum Vergleich markiert</span>',
     `<span class="badge badge--muted">${escapeHtml(gift.kategorie)}</span>`,
     gift.natürlichenUrsprungs
       ? '<span class="badge badge--success">natürlich</span>'
