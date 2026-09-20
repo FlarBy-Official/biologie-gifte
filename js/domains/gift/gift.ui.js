@@ -6,11 +6,11 @@
  * Funktionen, die Daten in DOM/HTML umwandeln bzw. das Formular
  * befüllen/leeren.
  */
-import { escapeHtml } from "../../core/utils.js?v=5";
-import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=5";
-import { getStructureImagePath } from "./gift.structures.js?v=5";
-import { GiftFavorites } from "./gift.favorites.js?v=5";
-import { EditLock } from "../../core/edit-lock.js?v=5";
+import { escapeHtml } from "../../core/utils.js?v=6";
+import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=6";
+import { getStructureImagePath } from "./gift.structures.js?v=6";
+import { GiftFavorites } from "./gift.favorites.js?v=6";
+import { EditLock } from "../../core/edit-lock.js?v=6";
 
 const KATEGORIE_ICON = {
   Pflanze: "🌿",
@@ -53,6 +53,7 @@ export function renderGiftCard(gift) {
         </div>
         <div class="card__actions">
           <button type="button" class="btn btn--icon gift-favorite-btn${isFavorite ? " is-favorite" : ""}" data-action="favorite" title="${isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}">${isFavorite ? "★" : "☆"}</button>
+          <button type="button" class="btn btn--icon" data-action="compare" title="Vergleichen">⚖️</button>
           ${unlocked ? `<button type="button" class="btn btn--icon" data-action="edit" title="Bearbeiten">✏️</button>` : ""}
           ${unlocked ? `<button type="button" class="btn btn--icon" data-action="delete" title="Löschen">🗑️</button>` : ""}
         </div>
@@ -147,6 +148,7 @@ export function renderGiftDetail(gift) {
       </div>
       <div class="gift-detail__actions">
         <button type="button" class="btn btn--icon gift-favorite-btn${GiftFavorites.isFavorite(gift.id) ? " is-favorite" : ""}" data-action="favorite" title="${GiftFavorites.isFavorite(gift.id) ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}">${GiftFavorites.isFavorite(gift.id) ? "★" : "☆"}</button>
+        <button type="button" class="btn btn--icon" data-action="compare" title="Vergleichen">⚖️</button>
         <button type="button" class="btn btn--icon" data-gift-detail-close title="Schließen">✕</button>
       </div>
     </div>
@@ -159,6 +161,76 @@ export function renderGiftDetail(gift) {
     ${detailSection("Notizen", gift.notizen)}
     ${gift.quelle ? `<div class="gift-detail__source">Quelle: ${escapeHtml(gift.quelle)}</div>` : ""}
     ${renderStructureImage(gift)}
+  `;
+}
+
+/** Baut die `<option>`-Elemente für die Gift-Auswahl im Vergleichsmodal, alphabetisch sortiert. */
+export function renderGiftCompareOptions(gifte) {
+  return gifte
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((gift) => `<option value="${escapeHtml(gift.id)}">${escapeHtml(gift.name)}</option>`)
+    .join("");
+}
+
+function compareRow(label, valueA, valueB) {
+  return `
+    <tr>
+      <td class="gift-compare__label">${escapeHtml(label)}</td>
+      <td>${escapeHtml(valueA)}</td>
+      <td>${escapeHtml(valueB)}</td>
+    </tr>
+  `;
+}
+
+/** Vergleichszeile für Ränge: markiert die niedrigere (= gefährlichere) Platzierung mit 🏆. */
+function compareRankRow(label, rankA, rankB) {
+  const aIsBetter = rankA != null && (rankB == null || rankA < rankB);
+  const bIsBetter = rankB != null && (rankA == null || rankB < rankA);
+  const textA = rankA != null ? `#${rankA}` : "unbekannt";
+  const textB = rankB != null ? `#${rankB}` : "unbekannt";
+  return `
+    <tr>
+      <td class="gift-compare__label">${escapeHtml(label)}</td>
+      <td class="${aIsBetter ? "gift-compare__cell--highlight" : ""}">${escapeHtml(textA)}${aIsBetter ? " 🏆" : ""}</td>
+      <td class="${bIsBetter ? "gift-compare__cell--highlight" : ""}">${escapeHtml(textB)}${bIsBetter ? " 🏆" : ""}</td>
+    </tr>
+  `;
+}
+
+/** Baut die Vergleichstabelle für zwei Gifte (oder einen Hinweistext, falls eins fehlt). */
+export function renderGiftCompareTable(giftA, giftB) {
+  if (!giftA || !giftB) {
+    return `<p class="gift-compare__hint">Bitte zwei Gifte auswählen, um sie zu vergleichen.</p>`;
+  }
+  const rows = [
+    compareRow("Kategorie", giftA.kategorie, giftB.kategorie),
+    compareRow(
+      "Ursprung",
+      giftA.natürlichenUrsprungs ? "natürlich" : "synthetisch",
+      giftB.natürlichenUrsprungs ? "natürlich" : "synthetisch",
+    ),
+    compareRow("Gefährlich f. Menschen", giftA.gefährlichFürMenschen ? "Ja" : "Nein", giftB.gefährlichFürMenschen ? "Ja" : "Nein"),
+    compareRow("Gefährlich f. Tiere", giftA.gefährlichFürTiere ? "Ja" : "Nein", giftB.gefährlichFürTiere ? "Ja" : "Nein"),
+    compareRow("Letale Dosis", renderDosis(giftA), renderDosis(giftB)),
+    compareRankRow("Rang weltweit", giftA.rangWeltweit, giftB.rangWeltweit),
+    compareRankRow("Rang Europa", giftA.rangEuropa, giftB.rangEuropa),
+    compareRow("Vorkommen", giftA.ort || "–", giftB.ort || "–"),
+    compareRow("Symptome", giftA.symptome || "–", giftB.symptome || "–"),
+    compareRow("Gegenmittel", giftA.gegenmittel || "–", giftB.gegenmittel || "–"),
+  ].join("");
+
+  return `
+    <table class="gift-compare__table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>${escapeHtml(giftA.name)}</th>
+          <th>${escapeHtml(giftB.name)}</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
   `;
 }
 

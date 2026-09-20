@@ -34,6 +34,11 @@
   white-space: nowrap;
 }
 
+.gift-toolbar [data-gift-compare] {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .gift-category-icon {
   font-size: 14px;
 }
@@ -311,4 +316,46 @@
     width: 150px;
     height: 150px;
   }
+
+  .gift-compare__table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* Vergleichsmodal: zwei Gift-Auswahlen + Tabelle mit den wichtigsten Feldern nebeneinander. */
+.gift-compare__selectors {
+  margin-bottom: var(--space-4);
+}
+
+.gift-compare__hint {
+  color: var(--text-muted);
+}
+
+.gift-compare__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gift-compare__table th,
+.gift-compare__table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+.gift-compare__table th {
+  color: var(--text-bright);
+}
+
+.gift-compare__label {
+  width: 160px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.gift-compare__cell--highlight {
+  color: var(--danger);
+  font-weight: 700;
 }

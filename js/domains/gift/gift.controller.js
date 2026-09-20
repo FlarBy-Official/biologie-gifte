@@ -5,15 +5,15 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=5";
-import { validateGift } from "./gift.model.js?v=5";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm } from "./gift.ui.js?v=5";
-import { GiftFavorites } from "./gift.favorites.js?v=5";
-import { EditLock } from "../../core/edit-lock.js?v=5";
-import { BackStack } from "../../core/back-stack.js?v=5";
-import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=5";
-import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=5";
-import { debounce, showToast } from "../../core/utils.js?v=5";
+import { GiftApi } from "./gift.api.js?v=6";
+import { validateGift } from "./gift.model.js?v=6";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareOptions, renderGiftCompareTable } from "./gift.ui.js?v=6";
+import { GiftFavorites } from "./gift.favorites.js?v=6";
+import { EditLock } from "../../core/edit-lock.js?v=6";
+import { BackStack } from "../../core/back-stack.js?v=6";
+import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=6";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=6";
+import { debounce, showToast } from "../../core/utils.js?v=6";
 
 export const GiftController = {
   selectedId: null,
@@ -36,6 +36,11 @@ export const GiftController = {
     this.zoomImgEl = document.querySelector("[data-gift-structure-zoom-img]");
     this.zoomCaptionEl = document.querySelector("[data-gift-structure-zoom-caption]");
     this.newButtonEl = document.querySelector("[data-gift-new]");
+    this.compareButtonEl = document.querySelector("[data-gift-compare]");
+    this.compareModalEl = document.querySelector("[data-gift-compare-modal]");
+    this.compareSelectAEl = document.querySelector('[data-gift-compare-select="a"]');
+    this.compareSelectBEl = document.querySelector('[data-gift-compare-select="b"]');
+    this.compareTableEl = document.querySelector("[data-gift-compare-table]");
     this.editLockToggleEl = document.querySelector("[data-edit-lock-toggle]");
     this.editLockModalEl = document.querySelector("[data-edit-lock-modal]");
     this.editLockFormEl = document.querySelector("[data-edit-lock-form]");
@@ -48,6 +53,15 @@ export const GiftController = {
     });
 
     this.newButtonEl.addEventListener("click", () => this.openCreateModal());
+    this.compareButtonEl.addEventListener("click", () => this.openCompareModal());
+    document.querySelector("[data-gift-compare-modal-close]").addEventListener("click", () => this.closeCompareModal());
+    this.compareModalEl.addEventListener("click", (event) => {
+      if (event.target === this.compareModalEl) {
+        this.closeCompareModal();
+      }
+    });
+    this.compareSelectAEl.addEventListener("change", () => this.renderCompareTable());
+    this.compareSelectBEl.addEventListener("change", () => this.renderCompareTable());
     this.editLockToggleEl.addEventListener("click", () => this.handleEditLockToggle());
     document.querySelector("[data-edit-lock-modal-close]").addEventListener("click", () => this.closeEditLockModal());
     document.querySelector("[data-edit-lock-cancel]").addEventListener("click", () => this.closeEditLockModal());
@@ -312,6 +326,12 @@ export const GiftController = {
       }
       return;
     }
+    if (!this.compareModalEl.hidden) {
+      if (event.key === "Escape") {
+        this.closeCompareModal();
+      }
+      return;
+    }
     const tag = event.target.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
       return;
@@ -493,6 +513,8 @@ export const GiftController = {
       await this.deleteGift(id);
     } else if (button.dataset.action === "favorite") {
       this.toggleFavorite(id);
+    } else if (button.dataset.action === "compare") {
+      await this.openCompareModal(id);
     }
   },
 
@@ -524,6 +546,11 @@ export const GiftController = {
       this.toggleFavorite(this.selectedId);
       return;
     }
+    const compareButton = event.target.closest('[data-action="compare"]');
+    if (compareButton) {
+      this.openCompareModal(this.selectedId);
+      return;
+    }
     const zoomTrigger = event.target.closest("[data-gift-structure-zoom]");
     if (zoomTrigger) {
       this.openStructureZoom(zoomTrigger.dataset.giftStructureSrc, zoomTrigger.dataset.giftStructureName);
@@ -548,6 +575,38 @@ export const GiftController = {
   closeStructureZoomImmediate() {
     this.zoomModalEl.hidden = true;
     this.zoomImgEl.src = "";
+  },
+
+  /** Öffnet das Vergleichsmodal, optional mit vorausgewähltem Gift A (z.B. per Karten-Button). */
+  async openCompareModal(presetId) {
+    const gifte = await GiftApi.getAll();
+    this.compareGifte = gifte;
+    const options = `<option value="">– auswählen –</option>${renderGiftCompareOptions(gifte)}`;
+    this.compareSelectAEl.innerHTML = options;
+    this.compareSelectBEl.innerHTML = options;
+    if (presetId) {
+      this.compareSelectAEl.value = presetId;
+    }
+    this.compareModalEl.hidden = false;
+    this.renderCompareTable();
+    BackStack.push("gift-compare-modal", () => this.closeCompareModalImmediate());
+  },
+
+  closeCompareModal() {
+    if (BackStack.close("gift-compare-modal")) {
+      return;
+    }
+    this.closeCompareModalImmediate();
+  },
+
+  closeCompareModalImmediate() {
+    this.compareModalEl.hidden = true;
+  },
+
+  renderCompareTable() {
+    const giftA = (this.compareGifte ?? []).find((gift) => gift.id === this.compareSelectAEl.value) ?? null;
+    const giftB = (this.compareGifte ?? []).find((gift) => gift.id === this.compareSelectBEl.value) ?? null;
+    this.compareTableEl.innerHTML = renderGiftCompareTable(giftA, giftB);
   },
 
   async deleteGift(id) {

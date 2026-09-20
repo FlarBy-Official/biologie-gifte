@@ -15,11 +15,11 @@
   <meta http-equiv="Expires" content="0" />
   <title>Biologie · Gifte</title>
 
-  <link rel="stylesheet" href="css/base/reset.css?v=5" />
-  <link rel="stylesheet" href="css/base/variables.css?v=5" />
-  <link rel="stylesheet" href="css/base/layout.css?v=5" />
-  <link rel="stylesheet" href="css/base/components.css?v=5" />
-  <link rel="stylesheet" href="css/domains/gift/gift.css?v=5" />
+  <link rel="stylesheet" href="css/base/reset.css?v=6" />
+  <link rel="stylesheet" href="css/base/variables.css?v=6" />
+  <link rel="stylesheet" href="css/base/layout.css?v=6" />
+  <link rel="stylesheet" href="css/base/components.css?v=6" />
+  <link rel="stylesheet" href="css/domains/gift/gift.css?v=6" />
 </head>
 <body>
   <div class="app-shell" data-app-shell>
@@ -74,6 +74,7 @@
                   <span class="search-input-wrap__icon">🔍</span>
                   <input type="search" class="input" placeholder="Gift suchen…" data-gift-search />
                 </div>
+                <button type="button" class="btn btn--secondary" data-gift-compare>⚖️ Vergleichen</button>
                 <button type="button" class="btn btn--secondary" data-gift-new hidden>+ Neues Gift</button>
               </div>
 
@@ -210,6 +211,32 @@
     </div>
   </div>
 
+  <!-- Vergleichsmodal: zwei Gifte per Dropdown auswählen, Werte nebeneinander anzeigen -->
+  <div class="modal-overlay" data-gift-compare-modal hidden>
+    <div class="modal gift-compare-modal">
+      <div class="modal__header">
+        <span class="modal__title">⚖️ Gifte vergleichen</span>
+        <button type="button" class="btn btn--icon" data-gift-compare-modal-close title="Schließen">✕</button>
+      </div>
+      <div class="modal__body">
+        <div class="field-row gift-compare__selectors">
+          <div class="field">
+            <label class="field__label" for="gift-compare-a">Gift A</label>
+            <select class="select" id="gift-compare-a" data-gift-compare-select="a"></select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="gift-compare-b">Gift B</label>
+            <select class="select" id="gift-compare-b" data-gift-compare-select="b"></select>
+          </div>
+        </div>
+        <div data-gift-compare-table></div>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--secondary" data-gift-compare-modal-close>Schließen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Zoom-Ansicht für das Strukturbild im Detail-Panel -->
   <div class="modal-overlay structure-zoom-overlay" data-gift-structure-zoom-modal hidden>
     <div class="structure-zoom-modal">
@@ -245,6 +272,6 @@
 
   <div class="toast-container"></div>
 
-  <script type="module" src="js/app.js?v=5"></script>
+  <script type="module" src="js/app.js?v=6"></script>
 </body>
 </html>

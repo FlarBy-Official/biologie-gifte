@@ -10,8 +10,8 @@
  * Drawer schließen können, ohne einen Zirkelbezug auf app.js zu
  * erzeugen.
  */
-import { BackStack } from "./back-stack.js?v=5";
-import { isMobileViewport } from "./viewport.js?v=5";
+import { BackStack } from "./back-stack.js?v=6";
+import { isMobileViewport } from "./viewport.js?v=6";
 
 export const SidebarDrawer = {
   init() {
