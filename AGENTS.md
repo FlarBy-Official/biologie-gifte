@@ -1,5 +1,7 @@
 # AGENTS.md – Architektur & Konventionen
 
+> Ich bin ein 11 jähriges Kind, bitte schreibe keine komplizierten Wörter rein.
+
 Dieses Dokument beschreibt die Architektur der App, damit neue Domains
 ("kleine Apps") konsistent nach dem gleichen Muster hinzugefügt werden
 können.
