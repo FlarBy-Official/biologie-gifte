@@ -6,11 +6,11 @@
  * Funktionen, die Daten in DOM/HTML umwandeln bzw. das Formular
  * befüllen/leeren.
  */
-import { escapeHtml } from "../../core/utils.js?v=6";
-import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=6";
-import { getStructureImagePath } from "./gift.structures.js?v=6";
-import { GiftFavorites } from "./gift.favorites.js?v=6";
-import { EditLock } from "../../core/edit-lock.js?v=6";
+import { escapeHtml } from "../../core/utils.js?v=7";
+import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=7";
+import { getStructureImagePath } from "./gift.structures.js?v=7";
+import { GiftFavorites } from "./gift.favorites.js?v=7";
+import { EditLock } from "../../core/edit-lock.js?v=7";
 
 const KATEGORIE_ICON = {
   Pflanze: "🌿",

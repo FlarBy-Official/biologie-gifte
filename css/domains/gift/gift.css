@@ -63,6 +63,48 @@
   overscroll-behavior: contain;
 }
 
+/* Ziehbarer Slider zwischen Liste und Detail-Panel (nur Desktop –
+   siehe Media-Query unten). Breite der Liste wird per Pointer-Drag
+   oder Pfeiltasten angepasst, siehe js/domains/gift/gift.resizer.js. */
+.gift-layout__resizer {
+  flex: 0 0 10px;
+  width: 10px;
+  min-height: 0;
+  cursor: col-resize;
+  position: relative;
+  touch-action: none;
+}
+
+.gift-layout__resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  transform: translateX(-50%);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--border-subtle);
+  transition: background-color 0.12s ease;
+}
+
+.gift-layout__resizer:hover::after,
+.gift-layout__resizer:focus-visible::after {
+  background: var(--brand);
+}
+
+.gift-layout__resizer:focus-visible {
+  outline: none;
+}
+
+/* Während des Ziehens überall col-resize erzwingen und Textmarkierung
+   verhindern, auch wenn der Zeiger kurz die Spalte verlässt. */
+body.is-resizing-gift-columns,
+body.is-resizing-gift-columns * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
 .gift-card--clickable {
   cursor: pointer;
   transition: border-color 0.12s ease;
@@ -245,6 +287,10 @@
     width: 100%;
     height: auto;
     overflow-y: visible;
+  }
+
+  .gift-layout__resizer {
+    display: none;
   }
 
   /* Suchfeld bleibt beim Scrollen der Liste erreichbar. Der

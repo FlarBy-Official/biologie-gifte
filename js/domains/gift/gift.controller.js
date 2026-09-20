@@ -5,15 +5,16 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=6";
-import { validateGift } from "./gift.model.js?v=6";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareOptions, renderGiftCompareTable } from "./gift.ui.js?v=6";
-import { GiftFavorites } from "./gift.favorites.js?v=6";
-import { EditLock } from "../../core/edit-lock.js?v=6";
-import { BackStack } from "../../core/back-stack.js?v=6";
-import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=6";
-import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=6";
-import { debounce, showToast } from "../../core/utils.js?v=6";
+import { GiftApi } from "./gift.api.js?v=7";
+import { validateGift } from "./gift.model.js?v=7";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareOptions, renderGiftCompareTable } from "./gift.ui.js?v=7";
+import { GiftFavorites } from "./gift.favorites.js?v=7";
+import { initGiftResizer } from "./gift.resizer.js?v=7";
+import { EditLock } from "../../core/edit-lock.js?v=7";
+import { BackStack } from "../../core/back-stack.js?v=7";
+import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=7";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=7";
+import { debounce, showToast } from "../../core/utils.js?v=7";
 
 export const GiftController = {
   selectedId: null,
@@ -47,6 +48,7 @@ export const GiftController = {
     this.editLockErrorEl = document.querySelector("[data-edit-lock-error]");
     this.editLockPinEl = document.getElementById("edit-lock-pin");
     this.topbarTitleEl = document.querySelector("[data-topbar-title]");
+    this.giftResizerEl = document.querySelector("[data-gift-resizer]");
 
     this.filterButtons.forEach((button) => {
       button.addEventListener("click", () => this.setFilter(button.dataset.giftFilter));
@@ -97,6 +99,7 @@ export const GiftController = {
     await GiftApi.init();
     this.updateEditLockUi();
     this.updateTopbarTitle();
+    initGiftResizer({ listColumnEl: this.listEl.parentElement, resizerEl: this.giftResizerEl });
     onViewportChange((isMobile) => this.handleViewportChange(isMobile));
     await this.renderList();
   },

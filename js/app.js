@@ -8,10 +8,10 @@
  * Neue Domain hinzufügen: hier importieren + in DOMAINS registrieren,
  * siehe AGENTS.md.
  */
-import { GiftController } from "./domains/gift/gift.controller.js?v=6";
-import { ThemeToggle } from "./core/theme.js?v=6";
-import { BackStack } from "./core/back-stack.js?v=6";
-import { SidebarDrawer } from "./core/sidebar-drawer.js?v=6";
+import { GiftController } from "./domains/gift/gift.controller.js?v=7";
+import { ThemeToggle } from "./core/theme.js?v=7";
+import { BackStack } from "./core/back-stack.js?v=7";
+import { SidebarDrawer } from "./core/sidebar-drawer.js?v=7";
 
 const DOMAINS = [{ key: "gift", controller: GiftController }];
 

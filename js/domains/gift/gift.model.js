@@ -4,7 +4,7 @@
  * Reine Datenstruktur + Validierung für die Domain "Gift".
  * Kein DOM-Zugriff, kein Storage-Zugriff.
  */
-import { createId, nowIso } from "../../core/utils.js?v=6";
+import { createId, nowIso } from "../../core/utils.js?v=7";
 
 /** Erlaubte Werte für das Kategorie-Feld. */
 export const GIFT_KATEGORIEN = ["Pflanze", "Tier", "Pilz", "Chemikalie", "Sonstiges"];
