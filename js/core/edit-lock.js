@@ -21,7 +21,7 @@ const MAX_ATTEMPTS_BEFORE_LOCKOUT = 5;
 const LOCKOUT_DURATION_MS = 30_000;
 
 // SHA-256-Hash des PIN (Klartext-PIN wird bewusst nicht im Code hinterlegt).
-const PIN_HASH = "577840113008523399379cbe093e92bf2cf40bbd605525418ea2bc40bf0ba20c";
+const PIN_HASH = "cd77c417c3e651c0c12a15cd7b8f7792e0b73de23b1ca5fa4eaf00d27926b8a7";
 
 async function hashPin(pin) {
   const data = new TextEncoder().encode(pin);
