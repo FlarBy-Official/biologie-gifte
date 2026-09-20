@@ -184,7 +184,11 @@ export const GiftController = {
     const filtered = all
       .filter((gift) => (term ? gift.name.toLowerCase().includes(term) : true))
       .filter((gift) => this.matchesFilter(gift))
-      .sort((a, b) => this.compareByRangWeltweit(a, b));
+      .sort((a, b) =>
+        this.activeFilter === "top25-europa"
+          ? this.compareByRangEuropa(a, b)
+          : this.compareByRangWeltweit(a, b),
+      );
     this.currentList = filtered;
     renderGiftList(this.listEl, filtered);
     this.highlightSelectedCard();
@@ -228,6 +232,23 @@ export const GiftController = {
   compareByRangWeltweit(a, b) {
     const rankA = a.rangWeltweit;
     const rankB = b.rangWeltweit;
+    if (rankA == null && rankB == null) {
+      return a.name.localeCompare(b.name);
+    }
+    if (rankA == null) {
+      return 1;
+    }
+    if (rankB == null) {
+      return -1;
+    }
+    return rankA - rankB;
+  },
+
+  /** Sortiert nach Rang Europa aufsteigend (Platz 1 zuerst); Gifte
+   *  ohne Rangangabe werden ans Ende sortiert, alphabetisch als Fallback. */
+  compareByRangEuropa(a, b) {
+    const rankA = a.rangEuropa;
+    const rankB = b.rangEuropa;
     if (rankA == null && rankB == null) {
       return a.name.localeCompare(b.name);
     }
