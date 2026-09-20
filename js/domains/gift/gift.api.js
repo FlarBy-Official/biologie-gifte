@@ -8,9 +8,9 @@
  * unverändert, solange die Funktionssignaturen (Promise-basiert)
  * gleich bleiben.
  */
-import { createStorageService } from "../../core/storage.js?v=7";
-import { createGift } from "./gift.model.js?v=7";
-import { GIFT_SEED_DATA } from "./gift.seed.js?v=7";
+import { createStorageService } from "../../core/storage.js?v=8";
+import { createGift } from "./gift.model.js?v=8";
+import { GIFT_SEED_DATA } from "./gift.seed.js?v=8";
 
 const STORAGE_KEY = "bg.gift.items";
 const storage = createStorageService(STORAGE_KEY);

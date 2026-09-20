@@ -6,11 +6,12 @@
  * Funktionen, die Daten in DOM/HTML umwandeln bzw. das Formular
  * befüllen/leeren.
  */
-import { escapeHtml } from "../../core/utils.js?v=7";
-import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=7";
-import { getStructureImagePath } from "./gift.structures.js?v=7";
-import { GiftFavorites } from "./gift.favorites.js?v=7";
-import { EditLock } from "../../core/edit-lock.js?v=7";
+import { escapeHtml } from "../../core/utils.js?v=8";
+import { GIFT_KATEGORIEN, GIFT_DOSIS_EINHEITEN } from "./gift.model.js?v=8";
+import { getStructureImagePath } from "./gift.structures.js?v=8";
+import { GiftFavorites } from "./gift.favorites.js?v=8";
+import { GiftCompareSelection } from "./gift.compare-selection.js?v=8";
+import { EditLock } from "../../core/edit-lock.js?v=8";
 
 const KATEGORIE_ICON = {
   Pflanze: "🌿",
@@ -43,9 +44,10 @@ function renderDosis(gift) {
 export function renderGiftCard(gift) {
   const icon = KATEGORIE_ICON[gift.kategorie] ?? "☠️";
   const isFavorite = GiftFavorites.isFavorite(gift.id);
+  const isCompareMarked = GiftCompareSelection.isMarked(gift.id);
   const unlocked = EditLock.isUnlocked();
   return `
-    <article class="card gift-card--clickable" data-gift-id="${escapeHtml(gift.id)}" tabindex="0">
+    <article class="card gift-card--clickable${isCompareMarked ? " gift-card--compare-marked" : ""}" data-gift-id="${escapeHtml(gift.id)}" tabindex="0">
       <div class="card__header">
         <div>
           <div class="card__title"><span class="gift-category-icon">${icon}</span> ${escapeHtml(gift.name)}</div>
@@ -53,7 +55,7 @@ export function renderGiftCard(gift) {
         </div>
         <div class="card__actions">
           <button type="button" class="btn btn--icon gift-favorite-btn${isFavorite ? " is-favorite" : ""}" data-action="favorite" title="${isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}">${isFavorite ? "★" : "☆"}</button>
-          <button type="button" class="btn btn--icon" data-action="compare" title="Vergleichen">⚖️</button>
+          <button type="button" class="btn btn--icon${isCompareMarked ? " is-marked" : ""}" data-action="compare" title="${isCompareMarked ? "Markierung aufheben" : "Zum Vergleich markieren"}">⚖️</button>
           ${unlocked ? `<button type="button" class="btn btn--icon" data-action="edit" title="Bearbeiten">✏️</button>` : ""}
           ${unlocked ? `<button type="button" class="btn btn--icon" data-action="delete" title="Löschen">🗑️</button>` : ""}
         </div>
@@ -148,7 +150,7 @@ export function renderGiftDetail(gift) {
       </div>
       <div class="gift-detail__actions">
         <button type="button" class="btn btn--icon gift-favorite-btn${GiftFavorites.isFavorite(gift.id) ? " is-favorite" : ""}" data-action="favorite" title="${GiftFavorites.isFavorite(gift.id) ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}">${GiftFavorites.isFavorite(gift.id) ? "★" : "☆"}</button>
-        <button type="button" class="btn btn--icon" data-action="compare" title="Vergleichen">⚖️</button>
+        <button type="button" class="btn btn--icon${GiftCompareSelection.isMarked(gift.id) ? " is-marked" : ""}" data-action="compare" title="${GiftCompareSelection.isMarked(gift.id) ? "Markierung aufheben" : "Zum Vergleich markieren"}">⚖️</button>
         <button type="button" class="btn btn--icon" data-gift-detail-close title="Schließen">✕</button>
       </div>
     </div>
@@ -162,15 +164,6 @@ export function renderGiftDetail(gift) {
     ${gift.quelle ? `<div class="gift-detail__source">Quelle: ${escapeHtml(gift.quelle)}</div>` : ""}
     ${renderStructureImage(gift)}
   `;
-}
-
-/** Baut die `<option>`-Elemente für die Gift-Auswahl im Vergleichsmodal, alphabetisch sortiert. */
-export function renderGiftCompareOptions(gifte) {
-  return gifte
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((gift) => `<option value="${escapeHtml(gift.id)}">${escapeHtml(gift.name)}</option>`)
-    .join("");
 }
 
 function compareRow(label, valueA, valueB) {
@@ -198,10 +191,15 @@ function compareRankRow(label, rankA, rankB) {
   `;
 }
 
-/** Baut die Vergleichstabelle für zwei Gifte (oder einen Hinweistext, falls eins fehlt). */
+/** Baut die Vergleichstabelle für zwei Gifte, oder einen Hinweis,
+ *  solange noch nicht zwei Gifte über den ⚖️-Button markiert wurden. */
 export function renderGiftCompareTable(giftA, giftB) {
+  if (!giftA && !giftB) {
+    return `<p class="gift-compare__hint">Markiere in der Liste oder im Detail-Panel zwei Gifte mit ⚖️, um sie hier zu vergleichen.</p>`;
+  }
   if (!giftA || !giftB) {
-    return `<p class="gift-compare__hint">Bitte zwei Gifte auswählen, um sie zu vergleichen.</p>`;
+    const marked = giftA ?? giftB;
+    return `<p class="gift-compare__hint">„${escapeHtml(marked.name)}“ ist markiert – markiere noch ein zweites Gift mit ⚖️, um den Vergleich zu sehen.</p>`;
   }
   const rows = [
     compareRow("Kategorie", giftA.kategorie, giftB.kategorie),

@@ -5,16 +5,17 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=7";
-import { validateGift } from "./gift.model.js?v=7";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareOptions, renderGiftCompareTable } from "./gift.ui.js?v=7";
-import { GiftFavorites } from "./gift.favorites.js?v=7";
-import { initGiftResizer } from "./gift.resizer.js?v=7";
-import { EditLock } from "../../core/edit-lock.js?v=7";
-import { BackStack } from "../../core/back-stack.js?v=7";
-import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=7";
-import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=7";
-import { debounce, showToast } from "../../core/utils.js?v=7";
+import { GiftApi } from "./gift.api.js?v=8";
+import { validateGift } from "./gift.model.js?v=8";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareTable } from "./gift.ui.js?v=8";
+import { GiftFavorites } from "./gift.favorites.js?v=8";
+import { GiftCompareSelection } from "./gift.compare-selection.js?v=8";
+import { initGiftResizer } from "./gift.resizer.js?v=8";
+import { EditLock } from "../../core/edit-lock.js?v=8";
+import { BackStack } from "../../core/back-stack.js?v=8";
+import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=8";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=8";
+import { debounce, showToast } from "../../core/utils.js?v=8";
 
 export const GiftController = {
   selectedId: null,
@@ -39,8 +40,6 @@ export const GiftController = {
     this.newButtonEl = document.querySelector("[data-gift-new]");
     this.compareButtonEl = document.querySelector("[data-gift-compare]");
     this.compareModalEl = document.querySelector("[data-gift-compare-modal]");
-    this.compareSelectAEl = document.querySelector('[data-gift-compare-select="a"]');
-    this.compareSelectBEl = document.querySelector('[data-gift-compare-select="b"]');
     this.compareTableEl = document.querySelector("[data-gift-compare-table]");
     this.editLockToggleEl = document.querySelector("[data-edit-lock-toggle]");
     this.editLockModalEl = document.querySelector("[data-edit-lock-modal]");
@@ -62,8 +61,6 @@ export const GiftController = {
         this.closeCompareModal();
       }
     });
-    this.compareSelectAEl.addEventListener("change", () => this.renderCompareTable());
-    this.compareSelectBEl.addEventListener("change", () => this.renderCompareTable());
     this.editLockToggleEl.addEventListener("click", () => this.handleEditLockToggle());
     document.querySelector("[data-edit-lock-modal-close]").addEventListener("click", () => this.closeEditLockModal());
     document.querySelector("[data-edit-lock-cancel]").addEventListener("click", () => this.closeEditLockModal());
@@ -517,7 +514,7 @@ export const GiftController = {
     } else if (button.dataset.action === "favorite") {
       this.toggleFavorite(id);
     } else if (button.dataset.action === "compare") {
-      await this.openCompareModal(id);
+      this.toggleCompareMark(id);
     }
   },
 
@@ -551,7 +548,7 @@ export const GiftController = {
     }
     const compareButton = event.target.closest('[data-action="compare"]');
     if (compareButton) {
-      this.openCompareModal(this.selectedId);
+      this.toggleCompareMark(this.selectedId);
       return;
     }
     const zoomTrigger = event.target.closest("[data-gift-structure-zoom]");
@@ -580,18 +577,45 @@ export const GiftController = {
     this.zoomImgEl.src = "";
   },
 
-  /** Öffnet das Vergleichsmodal, optional mit vorausgewähltem Gift A (z.B. per Karten-Button). */
-  async openCompareModal(presetId) {
+  /** Schaltet die Vergleichs-Markierung eines Gifts um (⚖️-Button auf
+   *  Karte/Detail). Sobald zwei Gifte markiert sind, öffnet sich das
+   *  Vergleichsmodal automatisch mit der fertigen Tabelle – ein
+   *  Auswahl-Dialog mit zwei Dropdowns entfällt dadurch. */
+  toggleCompareMark(id) {
+    const result = GiftCompareSelection.toggle(id);
+    if (!result.changed) {
+      showToast("Es sind bereits zwei Gifte markiert. Erst eine Markierung aufheben.", "info");
+      return;
+    }
+    this.updateCompareMarkUi();
+    if (result.full) {
+      this.openCompareModal();
+    } else if (!this.compareModalEl.hidden) {
+      this.renderCompareTable();
+    }
+  },
+
+  /** Aktualisiert die ⚖️-Buttons in Liste und Detail-Panel (analog zu toggleFavorite), ohne komplett neu zu rendern. */
+  updateCompareMarkUi() {
+    document.querySelectorAll('[data-action="compare"]').forEach((button) => {
+      const card = button.closest("[data-gift-id]");
+      const id = card ? card.dataset.giftId : this.selectedId;
+      const marked = GiftCompareSelection.isMarked(id);
+      button.classList.toggle("is-marked", marked);
+      button.title = marked ? "Markierung aufheben" : "Zum Vergleich markieren";
+      if (card) {
+        card.classList.toggle("gift-card--compare-marked", marked);
+      }
+    });
+  },
+
+  /** Öffnet das Vergleichsmodal mit den aktuell markierten Giften (⚖️),
+   *  oder einem Hinweis, solange noch nicht zwei markiert sind. */
+  async openCompareModal() {
     const gifte = await GiftApi.getAll();
     this.compareGifte = gifte;
-    const options = `<option value="">– auswählen –</option>${renderGiftCompareOptions(gifte)}`;
-    this.compareSelectAEl.innerHTML = options;
-    this.compareSelectBEl.innerHTML = options;
-    if (presetId) {
-      this.compareSelectAEl.value = presetId;
-    }
-    this.compareModalEl.hidden = false;
     this.renderCompareTable();
+    this.compareModalEl.hidden = false;
     BackStack.push("gift-compare-modal", () => this.closeCompareModalImmediate());
   },
 
@@ -607,8 +631,9 @@ export const GiftController = {
   },
 
   renderCompareTable() {
-    const giftA = (this.compareGifte ?? []).find((gift) => gift.id === this.compareSelectAEl.value) ?? null;
-    const giftB = (this.compareGifte ?? []).find((gift) => gift.id === this.compareSelectBEl.value) ?? null;
+    const [idA, idB] = GiftCompareSelection.getAll();
+    const giftA = (this.compareGifte ?? []).find((gift) => gift.id === idA) ?? null;
+    const giftB = (this.compareGifte ?? []).find((gift) => gift.id === idB) ?? null;
     this.compareTableEl.innerHTML = renderGiftCompareTable(giftA, giftB);
   },
 
@@ -622,6 +647,7 @@ export const GiftController = {
       return;
     }
     await GiftApi.remove(id);
+    GiftCompareSelection.remove(id);
     showToast(`"${gift?.name ?? "Eintrag"}" wurde gelöscht.`, "success");
     if (this.selectedId === id) {
       this.closeDetail();
