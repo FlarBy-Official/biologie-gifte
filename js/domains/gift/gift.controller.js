@@ -5,17 +5,17 @@
  * (Suche, Formular absenden, Bearbeiten, Löschen) und orchestriert
  * gift.api.js (Persistenz) + gift.ui.js (Rendering).
  */
-import { GiftApi } from "./gift.api.js?v=9";
-import { validateGift } from "./gift.model.js?v=9";
-import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareTable } from "./gift.ui.js?v=9";
-import { GiftFavorites } from "./gift.favorites.js?v=9";
-import { GiftCompareSelection } from "./gift.compare-selection.js?v=9";
-import { initGiftResizer } from "./gift.resizer.js?v=9";
-import { EditLock } from "../../core/edit-lock.js?v=9";
-import { BackStack } from "../../core/back-stack.js?v=9";
-import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=9";
-import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=9";
-import { debounce, showToast } from "../../core/utils.js?v=9";
+import { GiftApi } from "./gift.api.js?v=10";
+import { validateGift } from "./gift.model.js?v=10";
+import { renderGiftList, renderGiftDetail, fillGiftForm, readGiftForm, renderGiftCompareTable } from "./gift.ui.js?v=10";
+import { GiftFavorites } from "./gift.favorites.js?v=10";
+import { GiftCompareSelection } from "./gift.compare-selection.js?v=10";
+import { initGiftResizer } from "./gift.resizer.js?v=10";
+import { EditLock } from "../../core/edit-lock.js?v=10";
+import { BackStack } from "../../core/back-stack.js?v=10";
+import { SidebarDrawer } from "../../core/sidebar-drawer.js?v=10";
+import { isMobileViewport, onViewportChange } from "../../core/viewport.js?v=10";
+import { debounce, showToast } from "../../core/utils.js?v=10";
 
 export const GiftController = {
   selectedId: null,
@@ -55,7 +55,9 @@ export const GiftController = {
 
     this.newButtonEl.addEventListener("click", () => this.openCreateModal());
     this.compareButtonEl.addEventListener("click", () => this.openCompareModal());
-    document.querySelector("[data-gift-compare-modal-close]").addEventListener("click", () => this.closeCompareModal());
+    document.querySelectorAll("[data-gift-compare-modal-close]").forEach((button) => {
+      button.addEventListener("click", () => this.closeCompareModal());
+    });
     this.compareModalEl.addEventListener("click", (event) => {
       if (event.target === this.compareModalEl) {
         this.closeCompareModal();
